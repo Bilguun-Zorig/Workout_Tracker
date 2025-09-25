@@ -4,13 +4,13 @@ const cors = require('cors')
 const app = express();
 const port = 8000;
 
-app.use(cors());
+require('./config/mongoose.config');
 
-app.use(express.json());
+app.use(cors({ credentials: true, origin: 'http://localhost:5173' }));
 
-app.use(express.urlencoded({extended: true}))
+app.use(express.json(), express.urlencoded({ extended: true }));
 
-require('./config/mongoose.config')
+
 require('./routes/user.routes')(app);
 
 app.listen(port, () => console.log(`Listening on port: ${port}`));
