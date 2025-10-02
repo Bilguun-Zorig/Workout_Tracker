@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
+import {useNavigate} from 'react-router-dom'
 import axios from 'axios';
 
 const UserForm = () => {
+
+  const navigate = useNavigate()
 
   const [userInfo, setUserInfo] = useState({
     firstName: "",
@@ -26,13 +29,7 @@ const UserForm = () => {
     axios.post("http://localhost:8000/api/user", userInfo, { withCredentials: true })
       .then(res => {
         console.log(res.data);
-        // setUserInfo({
-        //   firstName: "",
-        //   lastName: "",
-        //   email: "",
-        //   password: "",
-        //   confirmPassword: ""
-        // })
+        navigate('/userProfile')
       })
       .catch(err => {
         console.log(err)

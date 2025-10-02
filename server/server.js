@@ -1,11 +1,14 @@
 const express = require('express');
-const cors = require('cors')
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const port = 8000;
 
+require('dotenv').config();
 require('./config/mongoose.config');
 
+app.use(cookieParser());
 app.use(cors({ credentials: true, origin: 'http://localhost:5173' }));
 
 app.use(express.json(), express.urlencoded({ extended: true }));

@@ -28,10 +28,10 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.virtual('confirmPassword')
     .get(() => this._confirmPassword)
-    .set( value => this._confirmPassword = value);
+    .set((value) => this._confirmPassword = value);
 
 UserSchema.pre('validate', function(next){
-    if(this.password !== this._confirmPassword){
+    if(this.password !== this.confirmPassword){
         this.invalidate('confirmPassword', 'Password must match confirm password');
     }
     next();
@@ -42,8 +42,8 @@ UserSchema.pre('save', function(next) {
         .then(hash => {
             this.password = hash;
             next();
-        })
-})
+        });
+});
 
 
 module.exports = mongoose.model('User', UserSchema);
