@@ -1,5 +1,6 @@
 const User = require('../models/user.model');
-
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 module.exports = {
 
@@ -7,7 +8,10 @@ module.exports = {
                 User.create(req.body) 
                         .then(user => { 
                                 const userToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY); 
-                                res.cookie("usertoken", userToken, { httpOnly: true }) .json({ msg: "success!",  user: user }); })
+                                res.cookie("usertoken", userToken, { httpOnly: true }) .json({ msg: "This response has a cookie!",  user: user }); 
+                                console.log("USER TOKEN", userToken)
+                        })
+                                
                         .catch(err => res.json(err));
         },
 
@@ -20,6 +24,6 @@ module.exports = {
                 res.cookie("usertoken", userToken, { httpOnly: true }) .json({ msg: "success!" });
         },
 
-        logout: (req, res) => { res.clearCookie('usertoken'); res.sendStatus(200); }
+        logout: async (req, res) => { res.clearCookie('usertoken'); res.sendStatus(200); }
 
 }
