@@ -23,12 +23,17 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Password is required'],
         minlength: [8, 'Password must be at least 8 characters long']
+    },
+    //! Later, I can gate features based on role
+    roles: {
+        type: [String],
+        default: ['user']
     }
 }, {timestamps: true});
 
 UserSchema.virtual('confirmPassword')
-    .get(() => this._confirmPassword)
-    .set((value) => this._confirmPassword = value);
+    .get(function () { return this._confirmPassword })
+    .set(function (value) {this._confirmPassword = value});
 
 UserSchema.pre('validate', function(next){
     if(this.password !== this.confirmPassword){

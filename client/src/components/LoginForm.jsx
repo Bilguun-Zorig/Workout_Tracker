@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import {useNavigate, useLocation} from 'react-router-dom'
-import axios from 'axios'
+import {api} from '../api/axios'
 
 
 const LoginForm = () => {
@@ -22,7 +22,7 @@ const LoginForm = () => {
 
     const submitHandler = e => {
         e.preventDefault();
-        axios.post('http://localhost:8000/api/user/login', userInfo, { withCredentials: true })
+        api.post('/user/login', userInfo)
             .then(res => {
                 console.log(res.data);
                 navigate('/userProfile');

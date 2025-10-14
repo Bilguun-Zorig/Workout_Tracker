@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {useNavigate} from 'react-router-dom'
-import axios from 'axios';
+// import axios from 'axios';
+import {api} from '../api/axios'
 
 const UserForm = () => {
 
@@ -26,21 +27,22 @@ const UserForm = () => {
 
   const onSubmitHandler = e => {
     e.preventDefault();
-    axios.post("http://localhost:8000/api/user", userInfo, { withCredentials: true })
+    api.post("/user", userInfo)
       .then(res => {
         console.log(res.data);
         navigate('/userProfile')
       })
       .catch(err => {
         console.log(err)
-        let errorsFromBackEnd = err.response.data.errors;
+        // optional chaining (?.) — a safe way to access nested properties without crashing if something is undefined or null.
+        let errorsFromBackEnd = err.response?.data?.errors || {};
         console.log(errorsFromBackEnd)
+
         let newErrorObj = { ...errorMessages }
-        for (let fieldName in errorMessages) {
+
+        for (let fieldName in newErrorObj) {
           if (errorsFromBackEnd.hasOwnProperty(fieldName)) {
-            newErrorObj[fieldName] = errorsFromBackEnd[fieldName].message;
-          } else {
-            newErrorObj[fieldName] = ""; //clear the error
+            newErrorObj[fieldName] = errorsFromBackEnd[fieldName]?.message || '';
           }
         }
         setErrorMessages(newErrorObj)

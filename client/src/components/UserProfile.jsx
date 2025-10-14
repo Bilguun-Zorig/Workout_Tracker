@@ -1,12 +1,12 @@
 import React from 'react'
-import axios from 'axios'
+import {api} from '../api/axios'
 import { Link, useNavigate } from 'react-router-dom'
 
 const UserProfile = () => {
     
   const navigate = useNavigate()
   const handleLogoutClick = () => {
-        axios.post('http://localhost:8000/api/user/logout', {}, { withCredentials: true })
+        api.post('/user/logout', {})
             .then(res => {
                 console.log(res);
                 navigate('/')
