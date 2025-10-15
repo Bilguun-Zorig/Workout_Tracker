@@ -5,7 +5,7 @@ module.exports = async function verifyJWT(req, res, next) {
 
     try {
         const token = req.cookies?.usertoken;
-        console.log("TOKEN FROM AUTH MIDDLEWARE", token)
+        console.log("TOKEN FROM AUTH MIDDLEWARE", req.cookies)
 
         if(!token) return res.status(401).json({ msg: 'No token' });
 

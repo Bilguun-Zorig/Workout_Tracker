@@ -1,12 +1,13 @@
 import React, {useState} from 'react'
-import {useNavigate, useLocation} from 'react-router-dom'
-import {api} from '../api/axios'
+import {useNavigate} from 'react-router-dom'
+// import {api} from '../api/axios'
+import { useAuth } from '../context/AuthContext';
 
 
 const LoginForm = () => {
 
     const navigate = useNavigate();
-    const location = useLocation();
+    const {login} = useAuth();
 
     const [userInfo, setUserInfo] = useState({
         email: "",
@@ -20,18 +21,30 @@ const LoginForm = () => {
         })
     };
 
-    const submitHandler = e => {
-        e.preventDefault();
-        api.post('/user/login', userInfo)
-            .then(res => {
-                console.log(res.data);
-                navigate('/userProfile');
-            })
-            .catch(err => {
-                console.log(err)
-            });
-    }
+    // const submitHandler = e => {
+    //     e.preventDefault();
+    //     api.post('/user/login', userInfo)
+    //         .then(res => {
+    //             console.log(res.data);
+    //             // navigate('/userProfile');
+    //             setTimeout(() => {
+    //                 navigate('/userProfile');
+    //             }, 200);
+    //         })
+    //         .catch(err => {
+    //             console.log('LOGING ERROR<> ',err)
+    //         });
+    // }
 
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        try {
+        await login(userInfo);     // <-- posts + fetchMe() to set user in context
+        navigate('/userProfile');
+        } catch (err) {
+        console.log('LOGIN ERROR', err);
+        }
+    };
 
 
 

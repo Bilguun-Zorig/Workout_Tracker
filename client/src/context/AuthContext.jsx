@@ -10,35 +10,50 @@ export function AuthProvider ({children}){
     const isAuthenticated = !!user;
     const roles = user?.roles || []
 
+    // const fetchMe = async () => {
+    //     try{
+    //         const {data} = await api.get('/auth/me');
+    //         setUser(data.user);
+    //     } catch {
+    //         setUser(null)
+    //     }
+    // }
+
     const fetchMe = async () => {
-        try{
-            const {data} = await api.get('/auth/me');
+        try {
+            const { data } = await api.get('/auth/me', {
+            headers: { 'X-Skip-Auth-Redirect': 'true' } // <- don't redirect on this probe
+            });
             setUser(data.user);
         } catch {
-            setUser(null)
+            setUser(null);
         }
-    }
+        };
 
-    // useEffect(() => {
-    //     (async ()=>{
-    //         setLoading(true)
-    //         await fetchMe()
-    //         setLoading(false)
-    //     })();
-    // }, [])
+
+
+
 
     useEffect(() => {
-    const PUBLIC = ['/', '/userlogin', '/register'];
-    if (PUBLIC.includes(window.location.pathname)) {
-        setLoading(false);
-        return;
-    }
-    (async () => {
-        setLoading(true);
-        await fetchMe();
-        setLoading(false);
-    })();
-    }, []);
+        (async ()=>{
+            setLoading(true)
+            await fetchMe()
+            setLoading(false)
+        })();
+    }, [])
+
+    // useEffect(() => {
+    //     const PUBLIC = ['/', '/userlogin', '/register'];
+    //     if (PUBLIC.includes(window.location.pathname)) {
+    //         setLoading(false);
+    //         return;
+    //     }
+    //     (async () => {
+    //         setLoading(true);
+    //         await fetchMe();
+    //         setLoading(false);
+    //     })();
+    //     }, []);
 
 
 

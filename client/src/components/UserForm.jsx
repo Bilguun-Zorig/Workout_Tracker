@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import {useNavigate} from 'react-router-dom'
 // import axios from 'axios';
-import {api} from '../api/axios'
+// import {api} from '../api/axios'
+import { useAuth } from '../context/AuthContext'
 
 const UserForm = () => {
 
   const navigate = useNavigate()
+  const {register} = useAuth() //from useContext
 
   const [userInfo, setUserInfo] = useState({
     firstName: "",
@@ -25,14 +27,43 @@ const UserForm = () => {
 
 
 
-  const onSubmitHandler = e => {
-    e.preventDefault();
-    api.post("/user", userInfo)
-      .then(res => {
-        console.log(res.data);
-        navigate('/userProfile')
-      })
-      .catch(err => {
+  // const onSubmitHandler = e => {
+  //   e.preventDefault();
+  //   api.post("/user", userInfo)
+  //     .then(res => {
+  //       console.log(res.data);
+  //       // navigate('/userProfile')
+  //       setTimeout(() => {
+  //         navigate('/userProfile')
+  //       }, 200);
+  //     })
+  //     .catch(err => {
+  //       console.log(err)
+  //       // optional chaining (?.) — a safe way to access nested properties without crashing if something is undefined or null.
+  //       let errorsFromBackEnd = err.response?.data?.errors || {};
+  //       console.log(errorsFromBackEnd)
+
+  //       let newErrorObj = { ...errorMessages }
+
+  //       for (let fieldName in newErrorObj) {
+  //         if (errorsFromBackEnd.hasOwnProperty(fieldName)) {
+  //           newErrorObj[fieldName] = errorsFromBackEnd[fieldName]?.message || '';
+  //         }
+  //       }
+  //       setErrorMessages(newErrorObj)
+  //       console.log("ERROR Object MSG: ", newErrorObj)
+  //       console.log("ERROR MSG: ", errorMessages)
+  //     })
+  // }
+
+    const onSubmitHandler = async (e) => {
+      e.preventDefault();
+      try {
+        await register(userInfo);  // <-- posts + fetchMe() sets user
+        navigate('/userProfile');
+      } catch (err) {
+        // const errors = err?.response?.data?.errors || {};
+        // setErrorMessages(errors);
         console.log(err)
         // optional chaining (?.) — a safe way to access nested properties without crashing if something is undefined or null.
         let errorsFromBackEnd = err.response?.data?.errors || {};
@@ -48,8 +79,9 @@ const UserForm = () => {
         setErrorMessages(newErrorObj)
         console.log("ERROR Object MSG: ", newErrorObj)
         console.log("ERROR MSG: ", errorMessages)
-      })
-  }
+      }
+    };
+
 
   const changeHandler = e => {
     setUserInfo({
