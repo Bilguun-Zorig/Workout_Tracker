@@ -9,7 +9,7 @@ export default function ProtectedRoute({children, roles}){
     if (loading) return <div>Loading...</div>
     //                                 try.   userlogin
     if(!isAuthenticated) {
-        console.warn("🔒 Redirecting to /userlogin");
+        console.warn("Redirecting to /userlogin");
         return <Navigate to="/userlogin" replace/>
     }
 
