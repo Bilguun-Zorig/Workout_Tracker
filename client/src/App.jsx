@@ -4,6 +4,7 @@ import UserForm from './components/UserForm'
 import UserProfile from './components/UserProfile'
 import LoginForm from './components/LoginForm'
 import ProtectedRoute from './components/ProtectedRoute'
+import UserSettings from './components/UserSettings'
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
               <UserProfile/>
             </ProtectedRoute>
           }/>
+          <Route path='/userSettings/:id' element={<UserSettings/>}/>
         </Routes>
     </>
   )

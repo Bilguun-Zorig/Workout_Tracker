@@ -6,10 +6,9 @@ const AuthContext = createContext(null);
 export function AuthProvider ({children}){
 
     const [user, setUser] = useState(null) // state variable and When app calls setUser(data.user) (inside fetchMe()), React updates that state.
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
     const isAuthenticated = !!user;
-    const roles = user?.roles || []
-
+    const roles = user?.roles || [];
     /**
      * fetchMe() gets the user data from your API.
         Calls setUser(data.user) → React updates the state.
@@ -52,11 +51,35 @@ export function AuthProvider ({children}){
         await api.post('/user/logout', {});
         setUser(null);
     }
+
+    //? Get one user
+    const getSingleUser = async (id) => {
+        
+        const { data } = await api.get(`/user/${id}`);
+        console.log("USER DATA FROM AUTHCONTEXT <>", data)
+        return data.user;
+    }
+
+    //? Update user
+    const updateUser = async (id, updates) => {
+        const { data } = await api.put(`/user/${id}`, updates); 
+        setUser(data.user) // update context with new user info, otherwise will have to refresh userprofile page to get the new info on
+        return data.user
+    }
+
+    //? Delete user
+    const deleteUser = async (id) => {
+        const { data } = await api.delete(`/user/${id}`); 
+        return data
+    }
+
+
+
 /**?
  * performance optimization — to avoid recalculating or recreating objects/functions unnecessarily on every render
  */
     const value = useMemo(() => ({
-        user, roles, loading, isAuthenticated, login, register, logout, fetchMe
+        user, roles, loading, isAuthenticated, login, register, logout, fetchMe, getSingleUser, updateUser, deleteUser
     }), [user, roles, loading, isAuthenticated])
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

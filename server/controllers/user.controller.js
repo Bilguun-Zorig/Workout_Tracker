@@ -74,6 +74,7 @@ module.exports = {
 
                 try {
                         const user = await User.findById(req.params.id).select('-password');
+                        console.log("USER FROM USER CONTROLLER", user)
                         if(!user) return res.status(404).json({message: 'User not found'});
                         return res.json({user})
                 }catch(err){
@@ -85,6 +86,9 @@ module.exports = {
         updateUser: async (req, res) => {
                 try {   
                         const updates = {...req.body}
+                        // console.log("UPDATES FROM USER CONTROLLER <>", updates.email)
+                        // not allow to update email
+                        delete updates.email;
                         if(updates.password){
                                 updates.password = await bcrypt.hash(updates.password, 10);
                         }
@@ -116,7 +120,12 @@ module.exports = {
                         if(user.deletedCount === 0){
                                 return res.status(404).json({message: 'User not found'});
                         }
-                        return res.json({result: user})
+                        // res.clearCookie('usertoken'); 
+                        return res.clearCookie('usertoken', {
+                                httpOnly: true,
+                                sameSite: 'Lax', // 'None' in production
+                                secure: process.env.NODE_ENV === 'production'
+                        }).json({result: user})
                 } catch (err) {
                         return res.status(400).json({message: 'Failed', error: err.errors || err});
                 }
