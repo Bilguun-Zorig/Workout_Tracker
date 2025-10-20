@@ -30,6 +30,7 @@ const UserProfile = () => {
           <li><hr className="dropdown-divider"></hr></li>
           <li><button  onClick={handleLogoutClick} className="dropdown-item">Logout</button></li>
         </ul>
+        <Link to={'/workout-plan'}>Create Your Workout Plan</Link>
       </div>
     </div>
   )
