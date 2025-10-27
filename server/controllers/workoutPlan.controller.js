@@ -10,35 +10,6 @@ dayjs.extend(utc)
 
 dayjs.updateLocale('en', {weekStart: 1}); // 1==monday
 
-// module.exports = {
-//     //? Create
-//     create: async (req, res) => {
-//         try {
-
-//             //Take user from token only
-//             const payload = {
-//                 ...req.body,
-//                 user: req.user._id
-//             };
-//             //Normalize deloadWeeks
-//             if(typeof payload.deloadWeeks === 'number'){
-//                 payload.deloadWeeks = [payload.deloadWeeks];
-//             }
-
-//             const plan = await workoutPlan.create(payload)
-//             res.status(201).json({plan})
-//         } catch (err) {
-//             console.log('CREATE WORKOUT PLAN ERROR <>', err)
-//             res.status(400).json({
-//                 message: 'Validation failed', 
-//                 errors: err.errors || err});
-//         }
-//     }
-
-
-// }
-
-
 module.exports = {
   create: async (req, res) => {
     try {
