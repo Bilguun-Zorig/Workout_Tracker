@@ -10,7 +10,7 @@ export function DaysOfWeekPicker ({value, onChange}) {
         set.has(day) ? set.delete(day) : set.add(day)
 
         onChange(Array.from(set))
-    }
+    };
 
     return (
         <div>
@@ -23,32 +23,30 @@ export function DaysOfWeekPicker ({value, onChange}) {
             }
         </div>
     )
-
-
 }
 
 //? Exercise editor for each day
-export function DayExerciseEditor ({day, exercise, onChange}) {
-    const nextLabel = () => String.fromCharCode(65 + exercise.length) //A, B, C
+export function DayExerciseEditor ({day, exercises, onChange}) {
+    const nextLabel = () => String.fromCharCode(65 + exercises.length) //A, B, C
 
     const addExercise = () => {
         const name = prompt(`Add exercise for ${day}:`)
 
         if(!name) return;
-        onChange([...exercise, {label: nextLabel(), name: name.trim()}])
+        onChange([...exercises, {label: nextLabel(), name: name.trim()}])
     };
 
     const removeExercise = index => {
-        const updated = exercise.filter((_, i) => i !== index)
+        const updated = exercises.filter((_, i) => i !== index)
             .map((ex, i) => ({
                 ...ex,
                 label: String.fromCharCode(65 + i)
             }))
-            onchange(updated)
+            onChange(updated)
     };
 
     const renameExercise = (index, name) => {
-        const updated = [...exercise];
+        const updated = [...exercises];
         updated[index] = {...updated[index], name}
         onChange(updated)
     };
@@ -61,10 +59,10 @@ export function DayExerciseEditor ({day, exercise, onChange}) {
             </div>
 
             {
-                exercise.length === 0 && <p>No exercise yet.</p>
+                exercises.length === 0 && <p>No exercise yet.</p>
             }
             {
-                exercise.map((ex, i) => (
+                exercises.map((ex, i) => (
                     <div key={i}>
                         <span>{ex.label}</span>
                         <input type="text" value={ex.name} onChange={(e) => renameExercise(i, e.target.value)} placeholder="Exercise name"/>

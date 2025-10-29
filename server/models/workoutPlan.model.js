@@ -11,7 +11,7 @@ const WorkoutPlanSchema = new mongoose.Schema({
     deloadWeeks: [Number], // deload week always the last week of workout plan eg if duration week is 4, deload week is the 4th week
     notes: String,
 
-    weeklyTemplates: [{
+    weeklyTemplate: [{
         weekday: {type: String, enum: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], required: true},
         exercises: [{
             label: {type: String, required: true},
