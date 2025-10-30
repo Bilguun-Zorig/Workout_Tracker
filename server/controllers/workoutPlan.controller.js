@@ -1,77 +1,44 @@
-const workoutPlan = require('../models/workoutPlan.model')
-const dayjs = require('dayjs')
-const isoWeek = require('dayjs/plugin/isoWeek');        // ISO week numbering
-const updateLocale = require('dayjs/plugin/updateLocale'); // to set weekStart
-const utc = require('dayjs/plugin/utc');                // optional but handy
-
-dayjs.extend(isoWeek)
-dayjs.extend(updateLocale)
-dayjs.extend(utc)
-
-dayjs.updateLocale('en', {weekStart: 1}); // 1==monday
+// const workoutPlan = require('../models/workoutPlan.model')
+const dayjs = require('dayjs');
+const WorkoutSession = require('../models/workoutPlan.model');
 
 module.exports = {
+  // Create or replace a session for a date
   create: async (req, res) => {
     try {
-      const {
-        title,
-        instruction,
-        startDate,        // ISO string or date-like
-        durationWeeks,    // number (e.g., 4, 8)
-        deloadWeeks,      // optional: number or [numbers]
-        notes
-      } = req.body;
+      const { date, exercises } = req.body;
+      if (!date) return res.status(400).json({ message: 'date is required' });
 
-      if (!title || !instruction) {
-        return res.status(400).json({ message: 'title and instruction are required' });
-      }
-      if (!startDate || !durationWeeks) {
-        return res.status(400).json({ message: 'startDate and durationWeeks are required' });
-      }
+      // Normalize to start-of-day UTC to avoid TZ duplicates
+      const d = dayjs(date).startOf('day').toDate();
 
-      const start = dayjs(startDate);
-      if (!start.isValid()) {
-        return res.status(400).json({ message: 'Invalid startDate' });
-      }
+      const normalized = (exercises || []).map((x, i) => ({
+        label: x.label || String.fromCharCode(65 + i),
+        name: (x.name || '').trim(),
+        result: (x.result || '').trim(),
+      })).filter(x => x.name);
 
-      const weeks = Number(durationWeeks);
-      if (!Number.isInteger(weeks) || weeks <= 0) {
-        return res.status(400).json({ message: 'durationWeeks must be a positive integer' });
-      }
+      const session = await WorkoutSession.findOneAndUpdate(
+        { user: req.user._id, date: d },
+        { $set: { exercises: normalized } },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
 
-      // Snap to week boundaries (Monday -> Sunday)
-      const startOfPlan = start.startOf('week');                 // Monday 00:00:00.000
-      const endOfPlan   = startOfPlan.add(weeks, 'week').endOf('week'); // Sunday 23:59:59.999 of final week
-
-      // Normalize deloadWeeks:
-      let deload = deloadWeeks;
-      if (typeof deload === 'number') deload = [deload];
-      if (!Array.isArray(deload) || deload.length === 0) {
-        deload = [weeks]; // default: last week is deload
-      }
-      // keep only valid week indices (1..weeks)
-      deload = deload
-        .map(Number)
-        .filter((w) => Number.isInteger(w) && w >= 1 && w <= weeks);
-
-      const plan = await workoutPlan.create({
-        user: req.user._id,            // make sure this route is behind your verifyJWT
-        title,
-        instruction,
-        startDate: startOfPlan.toDate(),
-        endDate: endOfPlan.toDate(),
-        durationWeeks: weeks,
-        deloadWeeks: deload,
-        notes
-      });
-
-      return res.status(201).json({ plan });
+      res.status(201).json({ session });
     } catch (err) {
-      console.error('Create plan error:', err);
-      return res.status(400).json({
-        message: 'Validation failed',
-        errors: err.errors || err
-      });
+      console.error('Session upsert error:', err);
+      res.status(400).json({ message: 'Validation failed', errors: err.errors || err });
     }
   },
+
+  // Get session by date (optional helper)
+  getByDate: async (req, res) => {
+    try {
+      const d = dayjs(req.query.date).startOf('day').toDate();
+      const session = await WorkoutSession.findOne({ user: req.user._id, date: d });
+      res.json({ session });
+    } catch (err) {
+      res.status(400).json({ message: 'Bad request', errors: err.errors || err });
+    }
+  }
 };

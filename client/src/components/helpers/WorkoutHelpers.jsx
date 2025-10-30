@@ -1,78 +1,36 @@
-import React from "react";
+import React from 'react';
 
-//? Days picker (checkbox)
-
-export function DaysOfWeekPicker ({value, onChange}) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-    const toggle = day => {
-        const set = new Set(value);
-        set.has(day) ? set.delete(day) : set.add(day)
-
-        onChange(Array.from(set))
-    };
-
-    return (
-        <div>
-            {
-                days.map( (d) => (
-                    <label key={d}>
-                        <input type="checkbox" checked={value.includes(d)} onChange={() => toggle(d)}/>
-                    </label>
-                ))
-            }
-        </div>
-    )
+/** Recompute labels A, B, C… after any insert/remove */
+export function relabelExercises(list) {
+  return list.map((ex, i) => ({
+    ...ex,
+    label: String.fromCharCode(65 + i),
+  }));
 }
 
-//? Exercise editor for each day
-export function DayExerciseEditor ({day, exercises, onChange}) {
-    const nextLabel = () => String.fromCharCode(65 + exercises.length) //A, B, C
+/** Next label based on current length */
+export function nextLabelFor(length) {
+  return String.fromCharCode(65 + length);
+}
 
-    const addExercise = () => {
-        const name = prompt(`Add exercise for ${day}:`)
-
-        if(!name) return;
-        onChange([...exercises, {label: nextLabel(), name: name.trim()}])
-    };
-
-    const removeExercise = index => {
-        const updated = exercises.filter((_, i) => i !== index)
-            .map((ex, i) => ({
-                ...ex,
-                label: String.fromCharCode(65 + i)
-            }))
-            onChange(updated)
-    };
-
-    const renameExercise = (index, name) => {
-        const updated = [...exercises];
-        updated[index] = {...updated[index], name}
-        onChange(updated)
-    };
-
-    return (
-        <div>
-            <div>
-                <strong>{day}</strong>
-                <button type="button" onClick={addExercise}>+ Add exercise</button>
-            </div>
-
-            {
-                exercises.length === 0 && <p>No exercise yet.</p>
-            }
-            {
-                exercises.map((ex, i) => (
-                    <div key={i}>
-                        <span>{ex.label}</span>
-                        <input type="text" value={ex.name} onChange={(e) => renameExercise(i, e.target.value)} placeholder="Exercise name"/>
-                        <button type="button" onClick={() => removeExercise(i)}>Remove</button>
-                    </div>
-                ))
-            }
-        </div>
-    )
-
-
-
+/** Single exercise row (A/B/C …) */
+export function ExerciseRow({ ex, onName, onResult, onRemove }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+      <strong style={{ width: 24 }}>{ex.label}</strong>
+      <input
+        style={{ flex: 1, padding: 6 }}
+        placeholder="Exercise name (e.g., Front Squat)"
+        value={ex.name}
+        onChange={(e) => onName(e.target.value)}
+      />
+      <input
+        style={{ flex: 1, padding: 6 }}
+        placeholder="Result/notes (e.g., 3×5 @ 185)"
+        value={ex.result}
+        onChange={(e) => onResult(e.target.value)}
+      />
+      <button type="button" onClick={onRemove}>Remove</button>
+    </div>
+  );
 }

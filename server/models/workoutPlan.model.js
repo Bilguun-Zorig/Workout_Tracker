@@ -1,24 +1,18 @@
 const mongoose = require('mongoose');
 
-const WorkoutPlanSchema = new mongoose.Schema({
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true},
-    title: {type: String, required: [true, 'Title is required']},
-    instruction: {type: String, required: [true, 'Instruction is required']},
-    startDate: {type: Date, required: [true, 'Start week is required']},
-    endDate: {type: Date, required: true},
+const ExerciseSchema = new mongoose.Schema({
+  label: { type: String, required: true },     // 'A', 'B', 'C', ...
+  name:  { type: String, required: true },     // 'Front Squat'
+  result: { type: String, default: '' }        // '3x5 @ 185', notes, etc.
+}, { _id: false });
 
-    durationWeeks: Number,
-    deloadWeeks: [Number], // deload week always the last week of workout plan eg if duration week is 4, deload week is the 4th week
-    notes: String,
+const WorkoutSessionSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },
+  date: { type: Date, required: true }, // stored as UTC midnight
+  exercises: { type: [ExerciseSchema], default: [] }
+}, { timestamps: true });
 
-    weeklyTemplate: [{
-        weekday: {type: String, enum: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], required: true},
-        exercises: [{
-            label: {type: String, required: true},
-            name: {type: String, required: true}
-        }]
-    }]
-}, {timestamps: true})
+// One session per user per date
+WorkoutSessionSchema.index({ user: 1, date: 1 }, { unique: true });
 
-
-module.exports = mongoose.model('WorkoutPlan', WorkoutPlanSchema)
+module.exports = mongoose.model('WorkoutSession', WorkoutSessionSchema);

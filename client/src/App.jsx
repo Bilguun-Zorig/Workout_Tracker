@@ -5,7 +5,7 @@ import UserProfile from './components/UserProfile'
 import LoginForm from './components/LoginForm'
 import ProtectedRoute from './components/ProtectedRoute'
 import UserSettings from './components/UserSettings'
-import CreatePlan from './components/CreatePlan'
+import CreateDailyWorkout from './components/CreateDailyWorkout'
 
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
             </ProtectedRoute>
           }/>
           <Route path='/userSettings/:id' element={<UserSettings/>}/>
-          <Route path='/workout-plan' element={<CreatePlan/>}/>
+          <Route path='/workout-plan' element={<CreateDailyWorkout/>}/>
         </Routes>
     </>
   )
