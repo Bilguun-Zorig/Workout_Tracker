@@ -36,9 +36,23 @@ module.exports = {
     try {
       const d = dayjs(req.query.date).startOf('day').toDate();
       const session = await WorkoutSession.findOne({ user: req.user._id, date: d });
-      res.json({ session });
+      return res.json({ session });
     } catch (err) {
       res.status(400).json({ message: 'Bad request', errors: err.errors || err });
     }
-  }
+  },
+
+  // Get all session 
+  getAllSession: async (req, res) => {
+    
+    try{
+      const allSessions = (await WorkoutSession.find({user: req.user._id})).toSorted({date: 1})
+      .lean(); //return plain objects
+      return res.json({allSessions})
+    } catch (err) {
+      res.status(400).json({ message: 'Bad request', errors: err.errors || err });
+    }
+  } 
+
+
 };

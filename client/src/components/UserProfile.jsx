@@ -1,12 +1,18 @@
-import React from 'react'
+import {useEffect, useState} from 'react'
 import {api} from '../api/axios'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import dayjs from 'dayjs';
+import axios from 'axios';
 
 const UserProfile = () => {
     
   const navigate = useNavigate();
   const {user, logout} = useAuth();
+  
+  const [allSessions, setAllSessions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [errorMessages, setErrorMessages] = useState('')
 
     console.log(user)
     const handleLogoutClick = async () => {
@@ -17,6 +23,32 @@ const UserProfile = () => {
         console.log(err)
       }
     }
+
+    useEffect(() => {
+      let alive = true;
+
+      (async () => {
+        try{
+          setLoading(true)
+          setErrorMessages('')
+          const {data} = await axios.get('/workout-plan/all-sessions');
+
+          if(!alive) return;
+          setAllSessions(data.allSessions || []);
+
+        } catch (err) {
+          if(!alive) return;
+          setErrorMessages(err.response?.data?.message || 'Failed to load sessions');
+        } finally {
+          if (alive) setLoading(false);
+        }
+      })();
+
+      return () => {alive = false}
+
+    }, [])
+
+
 
   return (
     <div>
@@ -32,6 +64,37 @@ const UserProfile = () => {
         </ul>
         <Link to={'/workout-plan'}>Create Your Workout Plan</Link>
       </div>
+   
+        {
+          loading && <p>Loading sessions...</p>
+        }
+        {
+          errorMessages && <p>{errorMessages}</p>
+        }
+        {
+          !loading && !errorMessages && (
+            <main>
+              {allSessions.length === 0 ? (<p>No workout session yet.</p>) : (
+                <ul>
+                  {
+                    allSessions.map( s => {
+                      <li key={s._id}>
+                        <p>{new Date(s.date).toLocaleDateString()}</p>
+                        {
+                          Array.isArray(s.exercises) && s.exercises.length > 0 ? (
+                            <ol>{s.exercises.map((ex, i) => 
+                              <li key={i}><strong>{ex.label || String.fromCharCode(65 + i)}</strong>: {ex.name} {ex.result ? `(${ex.result})` : ''}</li>
+                            )}</ol>
+                          ) : (<p>No exercises saved</p>)
+                        }
+                      </li>
+                    })
+                  }
+                </ul>
+              )}
+            </main>
+          )
+        }
     </div>
   )
 }

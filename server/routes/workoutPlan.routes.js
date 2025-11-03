@@ -20,5 +20,7 @@ router.use(verifyJWT);
 
 router.post('/new-plan', ctrl.create);
 router.get('/by-date', ctrl.getByDate);
+router.get('/all-sessions', ctrl.getAllSession)
+
 
 module.exports = router;
