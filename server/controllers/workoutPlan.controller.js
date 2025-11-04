@@ -1,5 +1,4 @@
-// const workoutPlan = require('../models/workoutPlan.model')
-const dayjs = require('dayjs');
+const dayjs = require('../config/dayjsConfig')
 const WorkoutSession = require('../models/workoutPlan.model');
 
 module.exports = {
@@ -46,13 +45,35 @@ module.exports = {
   getAllSession: async (req, res) => {
     
     try{
-      const allSessions = (await WorkoutSession.find({user: req.user._id})).toSorted({date: 1})
-      .lean(); //return plain objects
+      const allSessions = await WorkoutSession.find({user: req.user._id}).sort({date: 1}).lean(); //return plain objects
+      console.log('ALL SESSION: ', allSessions)
       return res.json({allSessions})
     } catch (err) {
       res.status(400).json({ message: 'Bad request', errors: err.errors || err });
     }
-  } 
+  },
+  
+  //Get all sessions by weekly
+  getSessionsByWeekly: async (req, res) => {
+    try {
+      const from = req.query.from ? dayjs(req.query.from) : dayjs().startOf('week');
+      const to = req.query.to ? dayjs(req.query.to) : dayjs().endOf('week');
+
+      if (!from?.isValid() || !to?.isValid()) {
+        return res.status(400).json({message: 'Invalid from/to'});
+      }
+
+      const start = from.startOf('day').toDate();
+      const end = to.startOf('day').toDate();
+
+      const allSessions = await WorkoutSession.find({user: req.user._id, date: {$gte: start, $lt: end}}).sort({date: 1}).lean();
+
+      return res.json({allSessions})
+
+    } catch(err) {
+      return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
+    }
+  }
 
 
 };

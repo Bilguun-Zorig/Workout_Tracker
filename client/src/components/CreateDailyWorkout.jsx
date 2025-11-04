@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
+import dayjs from './helpers/dayjsConfig'
 import { api } from '../api/axios';
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
