@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 // import dayjs from 'dayjs';
 import dayjs from './helpers/dayjsConfig'
+import ExerciseCommentRow from './ExerciseCommentRow'
 
 const UserProfile = () => {
 
@@ -23,31 +24,6 @@ const UserProfile = () => {
       console.log(err)
     }
   }
-
-  // useEffect(() => {
-  //   let alive = true;
-
-  //   (async () => {
-  //     try{
-  //       setLoading(true)
-  //       setErrorMessages('')
-  //       const {data} = await api.get('/workout-plan/all-sessions');
-
-  //       if(!alive) return;
-  //       setAllSessions(data.allSessions || []);
-
-  //     } catch (err) {
-  //       if(!alive) return;
-  //       setErrorMessages(err.response?.data?.message || 'Failed to load sessions');
-  //     } finally {
-  //       if (alive) setLoading(false);
-  //     }
-  //   })();
-
-  //   return () => {alive = false}
-
-  // }, [])
-
   useEffect(() => {
     let alive = true;
 
@@ -60,20 +36,20 @@ const UserProfile = () => {
         const startOfWeek = dayjs().startOf('week');
         const nextWeek = startOfWeek.add(1, 'week');
 
-        const {data} = await api.get('/workout-plan/sessions-by-weekly', {
-          params: {from: startOfWeek.toISOString(), to: nextWeek.toISOString()}
+        const { data } = await api.get('/workout-plan/sessions-by-weekly', {
+          params: { from: startOfWeek.toISOString(), to: nextWeek.toISOString() }
         })
-        if(!alive) return;
+        if (!alive) return;
         setAllSessions(data.allSessions || [])
       } catch (err) {
-        if(!alive) return;
+        if (!alive) return;
         setErrorMessages(err.response?.data?.message || 'Failed to load sessions');
       } finally {
         if (alive) setLoading(false);
       }
-        })();
+    })();
 
-      return () => {alive = false}
+    return () => { alive = false }
 
   }, [])
 
@@ -113,9 +89,20 @@ const UserProfile = () => {
                       <p>{dayjs(s.date).format('ddd, MM/DD/YYYY')}</p>
                       {
                         Array.isArray(s.exercises) && s.exercises.length > 0 ? (
-                          <ol>{s.exercises.map((ex, i) =>
-                            <li key={i}><strong>{ex.label || String.fromCharCode(65 + i)}</strong>: {ex.name} {ex.result ? `(${ex.result})` : ''}</li>
-                          )}</ol>
+                          <ol>
+                            {s.exercises.map((ex, i) => (
+                              <ExerciseCommentRow
+                                key={i}
+                                sessionDate={s.date}
+                                exercise={ex}
+                                onSaved={(updatedSession) => {
+                                  setAllSessions(prev =>
+                                    prev.map(x => (x._id === updatedSession._id ? updatedSession : x))
+                                  );
+                                }}
+                              />
+                            ))}
+                          </ol>
                         ) : (<p>No exercises saved</p>)
                       }
                     </li>

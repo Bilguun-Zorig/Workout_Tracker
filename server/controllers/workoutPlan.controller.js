@@ -73,6 +73,27 @@ module.exports = {
     } catch(err) {
       return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
     }
+  },
+
+  addComment: async (req, res) => {
+    try {
+      const { date, label, comment } = req.body;
+      if (!date || !label) return res.status(400).json({ message: 'Date and label is required'});
+
+      const d = dayjs(date).startOf('day').toDate();
+
+      const session = await WorkoutSession.findOneAndUpdate(
+        {user: req.user._id, date: d, 'exercises.label': label},
+        {$set: {'exercises.$.comment': (comment || '').trim()} },
+        {new: true}
+      )
+
+      if (!session) return res.status(400).json({ message: 'Session not found'});
+
+      return res.json({ session })
+    } catch (err) {
+      return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
+    } 
   }
 
 

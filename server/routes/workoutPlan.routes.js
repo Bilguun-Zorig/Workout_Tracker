@@ -8,7 +8,8 @@ router.use(verifyJWT);
 router.post('/new-plan', ctrl.create);
 router.get('/by-date', ctrl.getByDate);
 // router.get('/all-sessions', ctrl.getAllSession)
-router.get('/sessions-by-weekly', ctrl.getSessionsByWeekly)
+router.get('/sessions-by-weekly', ctrl.getSessionsByWeekly);
+router.patch('/session/exercise-comment', ctrl.addComment)
 
 
 module.exports = router;
