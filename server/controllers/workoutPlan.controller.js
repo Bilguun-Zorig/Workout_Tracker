@@ -94,6 +94,48 @@ module.exports = {
     } catch (err) {
       return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
     } 
+  },
+
+  // Returns past session on the same weekday before "date"
+  // If label is provided, returns only that exercise from each session
+  getExerciseHistoryByWeekDay: async (req, res) => {
+    try {
+      const {date, label, limit} = req.query;
+      if(!date) return res.status(400).json({ message: "date is required" });
+
+      const target = dayjs(date);
+      if(!target.isValid()) return res.status(400).json({ message: "Invalid date" }); 
+
+      const targetIsoDow = target.isoWeekday(); // 1=Mon ... 7=Sun
+      const beforeDate = target.startOf('day').toDate();
+      const lim = Math.max(1, Math.min(parseInt(limit || '10', 10), 50));
+      
+      const pipeline = [
+        {$match: {user: req.user._id, date: {$lt: beforeDate} }},
+        {$addFields: { _isoDow: { $isoDayOfWeek: '$date' } } },
+        {$match: { _isoDow: targetIsoDow } },
+        {$sort: { date: -1 }},
+        {$limit: lim}
+      ];
+
+      // if a label is provided, filter exercises down to just that one
+      if(label) {
+        pipeline.push(
+          {
+            $project: {date: 1, exercises: {$filter: {input: '$exercises', as: 'ex', cond: {$eq: ['$$ex.label', label]}}}}
+          },
+          {$match: {'exercises.0': {$exists: true}}}
+        );
+      } else {
+        pipeline.push({ $project: {date: 1, exercises: 1 } });
+      }
+
+      const items = await WorkoutSession.aggregate(pipeline);
+      return res.json({items})
+
+    } catch (err) {
+      return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
+    } 
   }
 
 

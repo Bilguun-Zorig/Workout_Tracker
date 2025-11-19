@@ -10,6 +10,6 @@ router.get('/by-date', ctrl.getByDate);
 // router.get('/all-sessions', ctrl.getAllSession)
 router.get('/sessions-by-weekly', ctrl.getSessionsByWeekly);
 router.patch('/session/exercise-comment', ctrl.addComment)
-
+router.get('/sessions/history')
 
 module.exports = router;
