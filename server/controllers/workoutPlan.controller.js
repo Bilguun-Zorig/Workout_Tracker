@@ -15,6 +15,8 @@ module.exports = {
         label: x.label || String.fromCharCode(65 + i),
         name: (x.name || '').trim(),
         result: (x.result || '').trim(),
+        comment: (x.comment || '').trim(),
+        videoUrl: (x.videoUrl || '').trim()
       })).filter(x => x.name);
 
       const session = await WorkoutSession.findOneAndUpdate(

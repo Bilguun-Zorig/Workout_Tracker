@@ -41,6 +41,14 @@ export default function CreateDailyWorkout() {
     });
   };
 
+    const updateVideoUrl = (i, videoUrl) => {
+    setExercises((prev) => {
+      const copy = [...prev];
+      copy[i] = { ...copy[i], videoUrl };
+      return copy;
+    });
+  };
+
   // Optional: load existing session when a date is picked
   useEffect(() => {
     (async () => {
@@ -54,6 +62,7 @@ export default function CreateDailyWorkout() {
           label: x.label ?? '',
           name: x.name ?? '',
           result: x.result ?? '',
+          videoUrl: x.videoUrl ?? '',
         }))));
       } catch {
         setExercises([]);
@@ -73,7 +82,8 @@ export default function CreateDailyWorkout() {
         exercises: exercises.map((x, i) => ({
           label: x.label || String.fromCharCode(65 + i),
           name: x.name.trim(),
-          result: x.result.trim(),
+          result: (x.result || '').trim(),
+          videoUrl: (x.videoUrl || '').trim(),
         })),
       });
       setMsg('Saved ✅');
@@ -85,7 +95,7 @@ export default function CreateDailyWorkout() {
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: '2rem auto', padding: 16 }}>
+    <div>
       <h2>Create / Edit Daily Workout</h2>
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -99,7 +109,7 @@ export default function CreateDailyWorkout() {
         </div>
       </LocalizationProvider>
 
-      <div style={{ margin: '12px 0' }}>
+      <div>
         <button type="button" onClick={addExercise}>+ Add exercise ({nextLabel})</button>
       </div>
 
@@ -111,10 +121,11 @@ export default function CreateDailyWorkout() {
           onName={(v) => updateName(i, v)}
           onResult={(v) => updateResult(i, v)}
           onRemove={() => removeExercise(i)}
+          onVideoUrl={(v) => updateVideoUrl(i, v)}
         />
       ))}
 
-      {msg && <p style={{ color: msg.includes('✅') ? 'green' : 'crimson' }}>{msg}</p>}
+      {msg && <p>{msg}</p>}
 
       <div>
         <button disabled={saving} onClick={save}>

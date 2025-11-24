@@ -14,22 +14,27 @@ export function nextLabelFor(length) {
 }
 
 /** Single exercise row (A/B/C …) */
-export function ExerciseRow({ ex, onName, onResult, onRemove }) {
+export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl }) {
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-      <strong style={{ width: 24 }}>{ex.label}</strong>
+    <div>
+      <strong>{ex.label}</strong>
       <input
-        style={{ flex: 1, padding: 6 }}
+      type='text'
         placeholder="Exercise name (e.g., Front Squat)"
         value={ex.name}
         onChange={(e) => onName(e.target.value)}
       />
       <input
-        style={{ flex: 1, padding: 6 }}
+        type='text'
         placeholder="Result/notes (e.g., 3×5 @ 185)"
         value={ex.result}
         onChange={(e) => onResult(e.target.value)}
       />
+      <input 
+        type="text"
+        placeholder="Video URL (optional)"
+        value={ex.videoUrl || ''}
+        onChange={(e) => onVideoUrl(e.target.value)}/>
       <button type="button" onClick={onRemove}>Remove</button>
     </div>
   );

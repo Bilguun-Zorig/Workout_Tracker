@@ -1,16 +1,31 @@
 import {useEffect, useState} from 'react'
 import {api} from '../api/axios'
 import dayjs from './helpers/dayjsConfig'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 
 
-const ExerciseHistory = ({sessionDate, label, onClose}) => {
+const ExerciseHistory = () => {
 
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [err, setErr] = useState('')
 
+    const location = useLocation()
+    const navigate = useNavigate()
+
+    //data passed from Link state
+    const {sessionDate} = location.state || {}
+
     useEffect(() => {
+
+        //If user opened /sessions/history directly with no state
+        if(!sessionDate) {
+            setErr('Missing exercise context. Please open history from a workout session')
+            setLoading(false)
+            return;
+        }
+
         let alive = true;
 
         (async () => {
@@ -18,7 +33,7 @@ const ExerciseHistory = ({sessionDate, label, onClose}) => {
                 setLoading(true)
                 setErr('')
                 const { data } = await api.get('/workout-plan/sessions/history', {
-                    params: {date: sessionDate, label, limit: 10}
+                    params: {date: sessionDate, limit: 10}
                 })
                 if(!alive) return;
                 setItems(data.items || []);
@@ -30,14 +45,15 @@ const ExerciseHistory = ({sessionDate, label, onClose}) => {
             }
         })();
 
-    }, [sessionDate, label])
+    }, [sessionDate])
 
 
   return (
     <div>
+        <button type='button' onClick={() => navigate(-1)}>Back</button>
         <div>
-            <strong>History for {label} on same weekday</strong>
-            <button onClick={onClose}>Close</button>
+            <strong>History for same weekday as {' '}</strong>
+            {/* <button onClick={onClose}>Close</button> */}
 
             {loading && <p>Loading...</p>}
             {err && <p>{err}</p>}
