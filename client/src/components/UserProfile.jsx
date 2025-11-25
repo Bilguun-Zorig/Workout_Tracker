@@ -62,6 +62,10 @@ const UserProfile = () => {
     (async () => {
       try{
         const { data } = await api.get('/workout-plan/session/deload-check')
+
+        data.shouldDeload = true;
+        data.weekNumber = 4
+
         if(!alive) return;
         if (data.shouldDeload) {
           setDeloadInfo(data)

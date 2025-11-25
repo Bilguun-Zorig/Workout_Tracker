@@ -146,8 +146,8 @@ module.exports = {
       const weekStart = today.startOf('week')
 
       const isMonday = today.isSame(weekStart, 'day')
-      if (isMonday){
-        return res.json({ shouldDeload: false })
+      if (!isMonday){
+        return res.json({ shouldDeload: false, weekNumber: null, reason: 'not Monday' })
       }
 
       let streakWeeks = 0
