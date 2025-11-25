@@ -12,4 +12,6 @@ router.get('/sessions-by-weekly', ctrl.getSessionsByWeekly);
 router.patch('/session/exercise-comment', ctrl.addComment)
 router.get('/sessions/history', ctrl.getExerciseHistoryByWeekDay)
 
+router.get('/session/deload-check', ctrl.checkDeload)
+
 module.exports = router;

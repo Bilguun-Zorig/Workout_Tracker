@@ -138,6 +138,45 @@ module.exports = {
     } catch (err) {
       return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
     } 
+  },
+
+  checkDeload: async (req, res) => {
+    try {
+      const today = dayjs()
+      const weekStart = today.startOf('week')
+
+      const isMonday = today.isSame(weekStart, 'day')
+      if (isMonday){
+        return res.json({ shouldDeload: false })
+      }
+
+      let streakWeeks = 0
+
+      for (let i = 1; i <= 3; i++) {
+        const from = weekStart.subtract(i, 'week').startOf('week').toDate()
+        const to = weekStart.subtract(i-1, 'week').startOf('week').toDate()
+
+        const count = await WorkoutSession.countDocuments({
+          user: req.user._id,
+          date: { $gte: from, $lt: to}
+        })
+
+        if (count > 0) {
+          streakWeeks += 1
+        } else {
+          break;
+        }
+      }
+
+      const shouldDeload = streakWeeks === 3;
+      return res.json({
+        shouldDeload,
+        weekNumber: streakWeeks + 1
+      })
+
+    } catch (err) {
+      return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
+    }
   }
 
 

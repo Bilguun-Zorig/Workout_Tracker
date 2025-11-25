@@ -15,6 +15,8 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true)
   const [errorMessages, setErrorMessages] = useState('')
 
+  const [deloadInfo, setDeloadInfo] = useState(null)
+
   console.log(user)
   const handleLogoutClick = async () => {
     try {
@@ -54,6 +56,25 @@ const UserProfile = () => {
   }, [])
 
 
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      try{
+        const { data } = await api.get('/workout-plan/session/deload-check')
+        if(!alive) return;
+        if (data.shouldDeload) {
+          setDeloadInfo(data)
+        }
+      } catch (err) {
+        console.log('Deload check failed', err)
+      }
+    })();
+
+    return () => { alive = false}
+
+  }, [])
+
 
 
   return (
@@ -70,6 +91,18 @@ const UserProfile = () => {
         </ul>
         <Link to={'/workout-plan'}>Create Your Workout Plan</Link>
       </div>
+      {/* Deload pop-up */}
+      {
+        deloadInfo && (
+          <div>
+            <p>
+              This is your {deloadInfo.weekNumber}th week starting
+              This should be a deload week - consider reducing volume/intensity.
+            </p>
+            <button type='button' onClick={() => setDeloadInfo(null)}>Close</button>
+          </div>
+        )
+      }
 
       {
         loading && <p>Loading sessions...</p>

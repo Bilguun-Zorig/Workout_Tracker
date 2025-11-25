@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 // import dayjs from 'dayjs';
 import dayjs from './helpers/dayjsConfig'
 import { api } from '../api/axios';
+import { useNavigate } from 'react-router-dom'
 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -14,6 +15,8 @@ export default function CreateDailyWorkout() {
   const [exercises, setExercises] = useState([]);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+
+  const navigate = useNavigate()
 
   const nextLabel = useMemo(() => nextLabelFor(exercises.length), [exercises.length]);
 
@@ -97,6 +100,7 @@ export default function CreateDailyWorkout() {
   return (
     <div>
       <h2>Create / Edit Daily Workout</h2>
+      <button type='button' onClick={() => navigate(-1)}>Back</button>
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div style={{ marginBottom: 16 }}>
