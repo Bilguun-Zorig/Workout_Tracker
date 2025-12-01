@@ -1,6 +1,8 @@
 const dayjs = require('../config/dayjsConfig')
 const WorkoutSession = require('../models/workoutPlan.model');
 
+const User = require('../models/user.model')
+
 module.exports = {
   // Create or replace a session for a date
   create: async (req, res) => {
@@ -143,13 +145,14 @@ module.exports = {
   checkDeload: async (req, res) => {
     try {
       const today = dayjs()
-      const weekStart = today.startOf('week')
+      const weekStart = today.startOf('week') //Monday
+      //? Load the user to read/update lastDeloadShownAt
+      const user = await User.findById(req.user._id).select('lastDeloadShownAt');
 
-      const isMonday = today.isSame(weekStart, 'day')
-      if (!isMonday){
-        return res.json({ shouldDeload: false, weekNumber: null, reason: 'not Monday' })
+      if(!user) {
+        return res.status(404).json({message: 'User not found'})
       }
-
+      //? Count how many previous weeks have at least one session
       let streakWeeks = 0
 
       for (let i = 1; i <= 3; i++) {
@@ -168,13 +171,38 @@ module.exports = {
         }
       }
 
-      const shouldDeload = streakWeeks === 3;
+      const weekNumber = streakWeeks + 1;
+      const coreShouldDeload = (streakWeeks === 3)
+
+      if(!coreShouldDeload) {
+        // not 4th week yet - no reminder
+        return res.json({
+          shouldDeload : false,
+          weekNumber,
+          reason: 'Less than 4-week streak'
+        })
+      }
+      //? Prevent repeated reminders in the same week
+      if(user.lastDeloadShownAt && dayjs(user.lastDeloadShownAt).isSame(today, 'week')) {
+        return res.json({
+          shouldDeload: false,
+          weekNumber,
+          reason: 'Deload reminder already shown this week'
+        })
+      }
+
+      //? This is the first time this week to show reminder and remember it
+      user.lastDeloadShownAt = today.toDate()
+      await user.save()
+
       return res.json({
-        shouldDeload,
-        weekNumber: streakWeeks + 1
+        shouldDeload: true,
+        weekNumber,
+        reason: '4-week streak and not yet shown for this week'
       })
 
     } catch (err) {
+      console.log('checkDeload error', err)
       return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
     }
   }

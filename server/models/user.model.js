@@ -29,6 +29,10 @@ const UserSchema = new mongoose.Schema({
     roles: {
         type: [String],
         default: ['user']
+    },
+    lastDeloadShownAt: {
+        type: Date,
+        default: null
     }
 }, {timestamps: true});
 
@@ -44,11 +48,18 @@ UserSchema.pre('validate', function(next){
 })
 
 UserSchema.pre('save', function(next) {
+
+    // Only hash when password is newly set or modified
+    if (!this.isModified('password')) {
+        return next();
+    }
+
     bcrypt.hash(this.password, 10)
         .then(hash => {
             this.password = hash;
             next();
-        });
+        })
+        .catch(next);
 });
 
 

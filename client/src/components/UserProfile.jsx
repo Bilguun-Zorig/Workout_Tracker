@@ -60,13 +60,19 @@ const UserProfile = () => {
     let alive = true;
 
     (async () => {
-      try{
+      try {
         const { data } = await api.get('/workout-plan/session/deload-check')
 
-        data.shouldDeload = true;
-        data.weekNumber = 4
+        console.log('DELOAD API: ', data); // <-- see what the backend returns
 
-        if(!alive) return;
+        // TEMP: force showing popup just to verify UI
+        // if (!alive) return;
+        // setDeloadInfo({
+        //   shouldDeload: true,
+        //   weekNumber: 4,
+        // });
+
+        if (!alive) return;
         if (data.shouldDeload) {
           setDeloadInfo(data)
         }
@@ -75,7 +81,7 @@ const UserProfile = () => {
       }
     })();
 
-    return () => { alive = false}
+    return () => { alive = false }
 
   }, [])
 
