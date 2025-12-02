@@ -62,15 +62,10 @@ const UserProfile = () => {
     (async () => {
       try {
         const { data } = await api.get('/workout-plan/session/deload-check')
+        //!Test to trigger deload week reminder
+        // const { data } = await api.get('/workout-plan/session/deload-check', {params: {testDate: '2025-12-01'}})
 
         console.log('DELOAD API: ', data); // <-- see what the backend returns
-
-        // TEMP: force showing popup just to verify UI
-        // if (!alive) return;
-        // setDeloadInfo({
-        //   shouldDeload: true,
-        //   weekNumber: 4,
-        // });
 
         if (!alive) return;
         if (data.shouldDeload) {

@@ -144,10 +144,19 @@ module.exports = {
 
   checkDeload: async (req, res) => {
     try {
+
+      //! Test - overwrite today
+      // const raw = req.query.testDate;
+      // const today = raw ? dayjs(raw) : dayjs();
+
       const today = dayjs()
       const weekStart = today.startOf('week') //Monday
-      //? Load the user to read/update lastDeloadShownAt
+      // //? Load the user to read/update lastDeloadShownAt
       const user = await User.findById(req.user._id).select('lastDeloadShownAt');
+
+      // if(!today.isValid()) {
+      //   return res.status(400).json({message: 'Invalid testDate'})
+      // }
 
       if(!user) {
         return res.status(404).json({message: 'User not found'})
