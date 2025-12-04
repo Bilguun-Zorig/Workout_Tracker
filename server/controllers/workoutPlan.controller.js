@@ -23,8 +23,6 @@ module.exports = {
           }
         }
       }
-
-
       
       const normalized = (exercises || []).map((x, i) => {
         const label = x.label || String.fromCharCode(65 + i)
@@ -39,13 +37,17 @@ module.exports = {
           rpeVal = Number.isNaN(n) ? null : n
         }
 
+        //merge isPr: new value wins if explicitly provided
+        const isPrVal = typeof x.isPr === 'boolean' ? x.isPr : !!prev.isPr
+
         return {
           label,
           name: (x.name || '').trim(),
           result: (x.result || '').trim(),
           comment: prev.comment ?? (x.comment || '').trim(),
           videoUrl: (x.videoUrl || '').trim(),
-          rpe: rpeVal
+          rpe: rpeVal,
+          isPr: isPrVal
         }
 
       }).filter(x => x.name)
@@ -110,7 +112,7 @@ module.exports = {
 
   addComment: async (req, res) => {
     try {
-      const { date, label, comment, rpe} = req.body;
+      const { date, label, comment, rpe, isPr} = req.body;
 
       console.log('NANI!!! What IS WROOONG', req.body)
 
@@ -133,6 +135,14 @@ module.exports = {
         }
 
         update['exercises.$.rpe'] = parsed
+      }
+
+      if(typeof isPr === 'boolean'){
+        update['exercises.$.isPr'] = isPr
+      }
+
+      if(Object.keys(update).length === 0) {
+        return res.status(400).json({message: 'No fields to update'})
       }
 
       const session = await WorkoutSession.findOneAndUpdate(

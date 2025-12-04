@@ -12,7 +12,8 @@ const ExerciseSchema = new mongoose.Schema({
     min: 1,
     max: 10,
     default: null
-  }
+  },
+  isPr: {type: Boolean, default: false}
 }, { _id: false });
 
 const WorkoutSessionSchema = new mongoose.Schema({

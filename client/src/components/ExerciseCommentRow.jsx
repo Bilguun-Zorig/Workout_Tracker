@@ -12,6 +12,7 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
   const [historyOpen, setHistoryOpen] = useState(false);
 
   const [rpe, setRpe] = useState(typeof exercise.rpe === 'number' ? exercise.rpe : '')
+  const [isPr, setIsPr] = useState(!!exercise.isPr)
 
   const save = async () => {
     try {
@@ -22,7 +23,8 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
         date: sessionDate,
         label: exercise.label,
         comment: value,
-        rpe: rpe === '' ? '' : Number(rpe)
+        rpe: rpe === '' ? '' : Number(rpe),
+        isPr
       }
 
       const { data } = await api.patch('/workout-plan/session/exercise-comment', payload);
@@ -40,13 +42,17 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
     <li>
       <strong>{exercise.label}</strong>: {exercise.name}{' '}
       {exercise.result ? <em>({exercise.result})</em> : null}{' '}
+      {exercise.isPr && <span>🏅PR</span>}{' '}
       
       {editing ? (
         <>
           <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="Add comment..." />
           <input type="number" min={1} max={10} value={rpe} onChange={(e) => {const v = e.target.value; setRpe(v === '' ? '' : Number(v))}} placeholder='RPE 1 - 10'/>
+          <label htmlFor="pr">
+                      <input type="checkbox" checked={isPr} onChange={(e) => setIsPr(e.target.checked)}/> {' '} Mark as PR
+          </label>
           <button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-          <button onClick={() => { setEditing(false); setValue(exercise.comment || ''); }}>Cancel</button>
+          <button onClick={() => { setEditing(false); setValue(exercise.comment || ''); setRpe(typeof exercise.rpe === 'number' ? exercise.rpe : ''); setIsPr(!!exercise.isPr) }}>Cancel</button>
           {err && <span>{err}</span>}
         </>
       ) : (
