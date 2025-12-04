@@ -21,7 +21,7 @@ export default function CreateDailyWorkout() {
   const nextLabel = useMemo(() => nextLabelFor(exercises.length), [exercises.length]);
 
   const addExercise = () => {
-    setExercises((prev) => [...prev, { label: nextLabel, name: '', result: '' }]);
+    setExercises((prev) => [...prev, { label: nextLabel, name: '', result: '', videoUrl: '' }]);
   };
 
   const removeExercise = (i) => {
@@ -52,6 +52,14 @@ export default function CreateDailyWorkout() {
     });
   };
 
+  // const updateRpe = (i, rpe) => {
+  //   setExercises((prev) => {
+  //     const copy = [...prev]
+  //     copy[i] = {...copy[i], rpe}
+  //     return copy
+  //   })
+  // }
+
   // Optional: load existing session when a date is picked
   useEffect(() => {
     (async () => {
@@ -65,7 +73,7 @@ export default function CreateDailyWorkout() {
           label: x.label ?? '',
           name: x.name ?? '',
           result: x.result ?? '',
-          videoUrl: x.videoUrl ?? '',
+          videoUrl: x.videoUrl ?? ''
         }))));
       } catch {
         setExercises([]);

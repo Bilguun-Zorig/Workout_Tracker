@@ -13,13 +13,42 @@ module.exports = {
       // Normalize to start-of-day UTC to avoid TZ duplicates
       const d = dayjs(date).startOf('day').toDate();
 
-      const normalized = (exercises || []).map((x, i) => ({
-        label: x.label || String.fromCharCode(65 + i),
-        name: (x.name || '').trim(),
-        result: (x.result || '').trim(),
-        comment: (x.comment || '').trim(),
-        videoUrl: (x.videoUrl || '').trim()
-      })).filter(x => x.name);
+      const existing = await WorkoutSession.findOne({user: req.user._id, date: d}).lean()
+
+      const oldByLabel = new Map()
+      if(existing && Array.isArray(existing.exercises)) {
+        for (const ex of existing.exercises) {
+          if(ex.label) {
+            oldByLabel.set(ex.label, ex)
+          }
+        }
+      }
+
+
+      
+      const normalized = (exercises || []).map((x, i) => {
+        const label = x.label || String.fromCharCode(65 + i)
+        const prev = oldByLabel.get(label) || {}
+
+        //merge RPE (prefer new if provided, else keep old)
+        const rawRpe = x.rpe !== undefined && x.rpe !== null && x.rpe !== '' ? x.rpe : prev.rpe
+
+        let rpeVal = null
+        if(rawRpe !== undefined && rawRpe !== null && rawRpe !== ''){
+          const n = Number(rawRpe)
+          rpeVal = Number.isNaN(n) ? null : n
+        }
+
+        return {
+          label,
+          name: (x.name || '').trim(),
+          result: (x.result || '').trim(),
+          comment: prev.comment ?? (x.comment || '').trim(),
+          videoUrl: (x.videoUrl || '').trim(),
+          rpe: rpeVal
+        }
+
+      }).filter(x => x.name)
 
       const session = await WorkoutSession.findOneAndUpdate(
         { user: req.user._id, date: d },
@@ -81,14 +110,34 @@ module.exports = {
 
   addComment: async (req, res) => {
     try {
-      const { date, label, comment } = req.body;
+      const { date, label, comment, rpe} = req.body;
+
+      console.log('NANI!!! What IS WROOONG', req.body)
+
       if (!date || !label) return res.status(400).json({ message: 'Date and label is required'});
 
       const d = dayjs(date).startOf('day').toDate();
 
+      const update = {}
+
+      if (comment !== undefined) {
+        update['exercises.$.comment'] = (comment || '').trim()
+      }
+
+      if (rpe !== undefined) {
+        // clear RPE if empty
+        const parsed = rpe === '' || rpe == null ? null : Number(rpe)
+
+        if (parsed !== null && (isNaN(parsed) || parsed < 1 || parsed > 10)){
+          return res.status(400).json({ message: 'RPE must be between 1 and 10'})
+        }
+
+        update['exercises.$.rpe'] = parsed
+      }
+
       const session = await WorkoutSession.findOneAndUpdate(
         {user: req.user._id, date: d, 'exercises.label': label},
-        {$set: {'exercises.$.comment': (comment || '').trim()} },
+        {$set: update },
         {new: true}
       )
 

@@ -6,7 +6,13 @@ const ExerciseSchema = new mongoose.Schema({
   name:  { type: String, required: true },     // 'Front Squat'
   result: { type: String, default: '' },        // '3x5 @ 185', notes, etc.
   comment: {type: String, default: ''},        // 225 lbs new PR etc
-  videoUrl: {type: String, default: ''}
+  videoUrl: {type: String, default: ''},
+  rpe: {
+    type: Number,
+    min: 1,
+    max: 10,
+    default: null
+  }
 }, { _id: false });
 
 const WorkoutSessionSchema = new mongoose.Schema({

@@ -11,15 +11,22 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
   const [err, setErr] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  const [rpe, setRpe] = useState(typeof exercise.rpe === 'number' ? exercise.rpe : '')
+
   const save = async () => {
     try {
       setSaving(true);
       setErr('');
-      const { data } = await api.patch('/workout-plan/session/exercise-comment', {
+
+      const payload = {
         date: sessionDate,
         label: exercise.label,
-        comment: value
-      });
+        comment: value,
+        rpe: rpe === '' ? '' : Number(rpe)
+      }
+
+      const { data } = await api.patch('/workout-plan/session/exercise-comment', payload);
+
       onSaved?.(data.session); // parent replaces session in state
       setEditing(false);
     } catch (e) {
@@ -33,9 +40,11 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
     <li>
       <strong>{exercise.label}</strong>: {exercise.name}{' '}
       {exercise.result ? <em>({exercise.result})</em> : null}{' '}
+      
       {editing ? (
         <>
           <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="Add comment..." />
+          <input type="number" min={1} max={10} value={rpe} onChange={(e) => {const v = e.target.value; setRpe(v === '' ? '' : Number(v))}} placeholder='RPE 1 - 10'/>
           <button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
           <button onClick={() => { setEditing(false); setValue(exercise.comment || ''); }}>Cancel</button>
           {err && <span>{err}</span>}
@@ -43,6 +52,7 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
       ) : (
         <>
           {exercise.comment ? ` — ${exercise.comment}` : ' — (no comment)'}
+          {typeof exercise.rpe === 'number' && `(RPE : ${exercise.rpe})`}
           <button onClick={() => setEditing(true)}>Comment</button>
           {/* <button onClick={() => setHistoryOpen(true)}>History</button> */}
           <Link to={'/sessions/history'} state={{sessionDate}}><button>History</button></Link>

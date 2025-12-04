@@ -14,7 +14,7 @@ export function nextLabelFor(length) {
 }
 
 /** Single exercise row (A/B/C …) */
-export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl }) {
+export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl, onRpe }) {
   return (
     <div>
       <strong>{ex.label}</strong>
@@ -35,6 +35,16 @@ export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl }) {
         placeholder="Video URL (optional)"
         value={ex.videoUrl || ''}
         onChange={(e) => onVideoUrl(e.target.value)}/>
+
+      {
+        typeof onRpe === 'function' && (
+                <input type="number" min={1} max={10} placeholder='RPE (1-10)' value={ex.rpe ?? ''} onChange={e => {
+        const v = e.target.value;
+        onRpe && onRpe(v === '' ? '' : Number(v))
+      }}/>
+        )
+      }
+
       <button type="button" onClick={onRemove}>Remove</button>
     </div>
   );
