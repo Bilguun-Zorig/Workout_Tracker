@@ -18,6 +18,9 @@ const UserProfile = () => {
   const [deloadInfo, setDeloadInfo] = useState(null)
 
   console.log(user)
+
+  const [categoryFilter, setCategoryFilter] = useState('')
+  
   const handleLogoutClick = async () => {
     try {
       await logout();
@@ -115,20 +118,63 @@ const UserProfile = () => {
       {
         errorMessages && <p>{errorMessages}</p>
       }
+      <div>
+        <label htmlFor="categoryFilter">
+          Filter by category: {' '}
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="">All</option>
+            <option value="strength">🟦 Strength</option>
+            <option value="hyrox">🟩 Hyrox</option>
+            <option value="cardio">🟨 Cardio</option>
+            <option value="mobility">🟥 Mobility</option>
+          </select>
+        </label>
+      </div>
       {
         !loading && !errorMessages && (
           <main>
             {allSessions.length === 0 ? (<p>No workout session yet.</p>) : (
               <ul>
                 {
-                  allSessions.map(s => (
-                    <li key={s._id}>
-                      {/* <p>{new Date(s.date).toLocaleDateString()}</p> */}
-                      <p>{dayjs(s.date).format('ddd, MM/DD/YYYY')}</p>
-                      {
-                        Array.isArray(s.exercises) && s.exercises.length > 0 ? (
+                  // allSessions.map(s => (
+                  //   <li key={s._id}>
+                  //     {/* <p>{new Date(s.date).toLocaleDateString()}</p> */}
+                  //     <p>{dayjs(s.date).format('ddd, MM/DD/YYYY')}</p>
+                  //     {
+                  //       Array.isArray(s.exercises) && s.exercises.length > 0 ? (
+                  //         <ol>
+                  //           {s.exercises.map((ex, i) => (
+                  //             <ExerciseCommentRow
+                  //               key={i}
+                  //               sessionDate={s.date}
+                  //               exercise={ex}
+                  //               onSaved={(updatedSession) => {
+                  //                 setAllSessions(prev =>
+                  //                   prev.map(x => (x._id === updatedSession._id ? updatedSession : x))
+                  //                 );
+                  //               }}
+                  //             />
+                  //           ))}
+                  //         </ol>
+                  //       ) : (<p>No exercises saved</p>)
+                  //     }
+                  //   </li>
+                  // ))
+
+
+                  allSessions.map(s => {
+                    const exercisesForSession = Array.isArray(s.exercises) ? s.exercises : [];
+
+                    const filteredExercises = categoryFilter ? exercisesForSession.filter(ex => ex.category === categoryFilter) : exercisesForSession;
+
+                    if(categoryFilter && filteredExercises.length === 0) return null;
+
+                    return (
+                      <li key={s._id}>
+                        <p>{dayjs(s.date).format('ddd, MM/DD/YYYY')}</p>
+                        {filteredExercises.length > 0 ? (
                           <ol>
-                            {s.exercises.map((ex, i) => (
+                            {filteredExercises.map((ex, i) => (
                               <ExerciseCommentRow
                                 key={i}
                                 sessionDate={s.date}
@@ -141,10 +187,11 @@ const UserProfile = () => {
                               />
                             ))}
                           </ol>
-                        ) : (<p>No exercises saved</p>)
-                      }
-                    </li>
-                  ))
+                        ) : (<p>No exercises saved</p>)}
+                      </li>
+                    )
+
+                  })
                 }
               </ul>
             )}

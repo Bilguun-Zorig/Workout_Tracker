@@ -1,7 +1,6 @@
 // components/ExerciseCommentRow.jsx
 import { useState } from 'react';
 import { api } from '../api/axios';
-import ExerciseHistory from './ExerciseHistory';
 import { Link } from 'react-router-dom'
 
 export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
@@ -9,10 +8,17 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
   const [value, setValue] = useState(exercise.comment || '');
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   const [rpe, setRpe] = useState(typeof exercise.rpe === 'number' ? exercise.rpe : '')
   const [isPr, setIsPr] = useState(!!exercise.isPr)
+
+
+  const category_labels = {
+    strength: '🟦 Strength',
+    hyrox: '🟩 Hyrox',
+    cardio: '🟨 Cardio',
+    mobility: '🟥 Mobility'
+  }
 
   const save = async () => {
     try {
@@ -59,9 +65,11 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
         <>
           {exercise.comment ? ` — ${exercise.comment}` : ' — (no comment)'}
           {typeof exercise.rpe === 'number' && `(RPE : ${exercise.rpe})`}
+          {exercise.category && `[${category_labels[exercise.category] || exercise.category}]`}
           <button onClick={() => setEditing(true)}>Comment</button>
           {/* <button onClick={() => setHistoryOpen(true)}>History</button> */}
           <Link to={'/sessions/history'} state={{sessionDate}}><button>History</button></Link>
+          <Link to={'/exercise/progress'} state={{exerciseName: exercise.name}}><button>Progress</button></Link>
         </>
       )}
 

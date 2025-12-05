@@ -14,7 +14,7 @@ export function nextLabelFor(length) {
 }
 
 /** Single exercise row (A/B/C …) */
-export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl, onRpe }) {
+export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl, onRpe, onCategory }) {
   return (
     <div>
       <strong>{ex.label}</strong>
@@ -35,6 +35,15 @@ export function ExerciseRow({ ex, onName, onResult, onRemove, onVideoUrl, onRpe 
         placeholder="Video URL (optional)"
         value={ex.videoUrl || ''}
         onChange={(e) => onVideoUrl(e.target.value)}/>
+
+      {/* Category */}
+      <select value={ex.category || ''} onChange={e => onCategory && onCategory(e.target.value || '')}>
+        <option value="">No tag</option>
+        <option value="strength">🟦 Strength</option>
+        <option value="hyrox">🟩 Hyrox</option>
+        <option value="cardio">🟨 Cardio</option>
+        <option value="mobility">🟥 Mobility</option>
+      </select>
 
       {
         typeof onRpe === 'function' && (

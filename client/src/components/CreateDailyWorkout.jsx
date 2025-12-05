@@ -21,7 +21,7 @@ export default function CreateDailyWorkout() {
   const nextLabel = useMemo(() => nextLabelFor(exercises.length), [exercises.length]);
 
   const addExercise = () => {
-    setExercises((prev) => [...prev, { label: nextLabel, name: '', result: '', videoUrl: '' }]);
+    setExercises((prev) => [...prev, { label: nextLabel, name: '', result: '', videoUrl: '', category: '' }]);
   };
 
   const removeExercise = (i) => {
@@ -52,13 +52,13 @@ export default function CreateDailyWorkout() {
     });
   };
 
-  // const updateRpe = (i, rpe) => {
-  //   setExercises((prev) => {
-  //     const copy = [...prev]
-  //     copy[i] = {...copy[i], rpe}
-  //     return copy
-  //   })
-  // }
+  const updateCategory = (i, category) => {
+    setExercises((prev) => {
+      const copy = [...prev]
+      copy[i] = { ...copy[i], category };
+      return copy;
+    })
+  }
 
   // Optional: load existing session when a date is picked
   useEffect(() => {
@@ -73,7 +73,8 @@ export default function CreateDailyWorkout() {
           label: x.label ?? '',
           name: x.name ?? '',
           result: x.result ?? '',
-          videoUrl: x.videoUrl ?? ''
+          videoUrl: x.videoUrl ?? '',
+          category: x.category ?? ''
         }))));
       } catch {
         setExercises([]);
@@ -95,6 +96,7 @@ export default function CreateDailyWorkout() {
           name: x.name.trim(),
           result: (x.result || '').trim(),
           videoUrl: (x.videoUrl || '').trim(),
+          category: (x.category || '').trim()
         })),
       });
       setMsg('Saved ✅');
@@ -134,6 +136,7 @@ export default function CreateDailyWorkout() {
           onResult={(v) => updateResult(i, v)}
           onRemove={() => removeExercise(i)}
           onVideoUrl={(v) => updateVideoUrl(i, v)}
+          onCategory={(v) => updateCategory(i, v)}
         />
       ))}
 

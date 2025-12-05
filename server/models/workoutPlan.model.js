@@ -13,7 +13,9 @@ const ExerciseSchema = new mongoose.Schema({
     max: 10,
     default: null
   },
-  isPr: {type: Boolean, default: false}
+  isPr: {type: Boolean, default: false},
+  category: { type: String, enum: ['strength', 'hyrox', 'cardio', 'mobility'] },
+  exerciseKey: {type: String, index: true}
 }, { _id: false });
 
 const WorkoutSessionSchema = new mongoose.Schema({

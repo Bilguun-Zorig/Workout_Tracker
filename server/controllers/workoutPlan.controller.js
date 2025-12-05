@@ -3,8 +3,19 @@ const WorkoutSession = require('../models/workoutPlan.model');
 
 const User = require('../models/user.model')
 
+
+function normalizeExerciseKEy(name = ''){
+  return name
+  .toLowerCase()
+  .trim()
+  .replace(/\s+/g, ' ')
+  .replace(/\bdumbbell\b/g, 'db')
+  .replace(/\bbarbell\b/g, 'bb')
+}
+
+
 module.exports = {
-  // Create or replace a session for a date
+  // Create or replace a session for a date``
   create: async (req, res) => {
     try {
       const { date, exercises } = req.body;
@@ -28,6 +39,8 @@ module.exports = {
         const label = x.label || String.fromCharCode(65 + i)
         const prev = oldByLabel.get(label) || {}
 
+        const rawName = (x.name || '').trim()
+
         //merge RPE (prefer new if provided, else keep old)
         const rawRpe = x.rpe !== undefined && x.rpe !== null && x.rpe !== '' ? x.rpe : prev.rpe
 
@@ -40,6 +53,8 @@ module.exports = {
         //merge isPr: new value wins if explicitly provided
         const isPrVal = typeof x.isPr === 'boolean' ? x.isPr : !!prev.isPr
 
+        const category = x.category && typeof x.category === 'string' ? x.category : prev.category || undefined;
+
         return {
           label,
           name: (x.name || '').trim(),
@@ -47,7 +62,9 @@ module.exports = {
           comment: prev.comment ?? (x.comment || '').trim(),
           videoUrl: (x.videoUrl || '').trim(),
           rpe: rpeVal,
-          isPr: isPrVal
+          isPr: isPrVal,
+          category,
+          exerciseKey: normalizeExerciseKEy(rawName)
         }
 
       }).filter(x => x.name)
@@ -271,6 +288,39 @@ module.exports = {
 
     } catch (err) {
       console.log('checkDeload error', err)
+      return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
+    }
+  },
+
+  getExerciseProgress: async (req, res) => {
+    try {
+      const {name, key, from, to } = req.query;
+
+      if(!name && !key) return res.status(400).json({message: 'name or key is required'});
+
+      const exerciseKey = key || normalizeExerciseKEy(name)
+
+      const fromDate = from ? dayjs(from).startOf('day').toDate() : new Date(0); // from the start
+      const toDate = to ? dayjs(to).endOf('day').toDate() : new Date(); // until now
+
+      const rows = await WorkoutSession.aggregate([
+        {
+          $match: {user: req.user._id, date: {$gte: fromDate, $lte: toDate}},
+        },
+        {$unwind: '$exercises'},
+        {$match: {'exercises.exercisesKey': exerciseKey}},
+        {$project: {_id: 0, date: 1, name: '$exercises.name', result: '$exercises.result', rpe: '$exercises.rpe', comment: '$exercises.comment', isPr: '$exercises.isPr', category: '$exercises.category'}},
+        {$sort: {date: 1}}
+      ])
+
+      const withLabels = rows.map(r => ({
+        ...r, dateLabel: dayjs(r.date).format('YYYY-MM-DD')
+      }))
+
+      return res.json({points: withLabels, exerciseKey})
+
+    } catch (err) {
+      console.log('getExerciseProgress error', err)
       return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
     }
   }

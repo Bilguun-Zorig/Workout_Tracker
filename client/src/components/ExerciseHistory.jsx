@@ -75,7 +75,7 @@ const ExerciseHistory = () => {
                                                 {typeof ex.rpe === 'number' ? `- RPE: ${ex.rpe}` : ''}
                                                 {ex.isPr && '🏅PR'}
                                                 {ex.comment ? `-(${ex.comment})` : ''}
-
+                                                {ex.category && `[${ex.category}]`}
                                             </li>
                                         ))}
                                     </ul>
