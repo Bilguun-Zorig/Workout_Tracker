@@ -28,7 +28,7 @@ const ExerciseProgress = () => {
             setLoading(true)
             setErr('')
             const {data} = await api.get('/workout-plan/session/progress', {params: {name: exerciseName}})
-
+            console.log("PROGRESS DATA", data.points)
             if(!alive) return
             setPoints(data.points || [])
         } catch (e) {
@@ -47,7 +47,9 @@ const ExerciseProgress = () => {
     <div>
         <button type='button' onClick={() => navigate(-1)}>Back</button>
         <h2>Progress for: {exerciseName || '(unknown)'}</h2>
-        {loading && <p>{err}</p>}
+
+        {loading && !err && <p>Loading...</p>}
+        {loading && err && <p>{err}</p>}
 
         {!loading && !err && points.length === 0 && (<p>No history found yet for this exercise</p>)}
 
@@ -65,7 +67,7 @@ const ExerciseProgress = () => {
                 <tbody>
                     {points.map((p, idx) => (
                         <tr key={idx}>
-                            <td>{dayjs(p.date).format('YYYY-MM_MD')}</td>
+                            <td>{dayjs(p.date).format('YYYY-MM-DD')}</td>
                             <td>{p.result}</td>
                             <td>{typeof p.rpe === 'number' ? p.rpe : '-'}</td>
                             <td>{p.isPr ? '🏅' : ''}</td>

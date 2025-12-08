@@ -13,6 +13,10 @@ function normalizeExerciseKEy(name = ''){
   .replace(/\bbarbell\b/g, 'bb')
 }
 
+function escapeRegExp(str = '') {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 
 module.exports = {
   // Create or replace a session for a date``
@@ -303,18 +307,35 @@ module.exports = {
       const fromDate = from ? dayjs(from).startOf('day').toDate() : new Date(0); // from the start
       const toDate = to ? dayjs(to).endOf('day').toDate() : new Date(); // until now
 
-      const rows = await WorkoutSession.aggregate([
-        {
-          $match: {user: req.user._id, date: {$gte: fromDate, $lte: toDate}},
-        },
-        {$unwind: '$exercises'},
-        {$match: {'exercises.exercisesKey': exerciseKey}},
-        {$project: {_id: 0, date: 1, name: '$exercises.name', result: '$exercises.result', rpe: '$exercises.rpe', comment: '$exercises.comment', isPr: '$exercises.isPr', category: '$exercises.category'}},
+      const pipeline = [{$match: {user: req.user._id, date: {$gte: fromDate, $lte: toDate}}}, {$unwind: '$exercises'}]
+      const orConds = [{'exercises.exerciseKey': exerciseKey}]
+
+      if(name) {
+        orConds.push({'exercises.name': new RegExp(`^${escapeRegExp(name)}$`, 'i')})
+      }
+
+      pipeline.push(
+        {$match: {$or: orConds}}, 
+        {$project: {_id: 0, date: 1, name: '$exercises.name', result: '$exercises.result', rpe: '$exercises.comment', isPr: '$exercises.isPr', category: '$exercises.category'}},
         {$sort: {date: 1}}
-      ])
+      )
+
+      const rows = await WorkoutSession.aggregate(pipeline)
+
+
+      // const rows = await WorkoutSession.aggregate([
+      //   {
+      //     $match: {user: req.user._id, date: {$gte: fromDate, $lte: toDate}},
+      //   },
+      //   {$unwind: '$exercises'},
+      //   {$match: {'exercises.exercisesKey': exerciseKey}},
+      //   {$project: {_id: 0, date: 1, name: '$exercises.name', result: '$exercises.result', rpe: '$exercises.rpe', comment: '$exercises.comment', isPr: '$exercises.isPr', category: '$exercises.category'}},
+      //   {$sort: {date: 1}}
+      // ])
 
       const withLabels = rows.map(r => ({
-        ...r, dateLabel: dayjs(r.date).format('YYYY-MM-DD')
+        ...r, 
+        dateLabel: dayjs(r.date).format('YYYY-MM-DD')
       }))
 
       return res.json({points: withLabels, exerciseKey})
