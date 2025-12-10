@@ -66,7 +66,7 @@ const UserProfile = () => {
       try {
         const { data } = await api.get('/workout-plan/session/deload-check')
         //!Test to trigger deload week reminder
-        // const { data } = await api.get('/workout-plan/session/deload-check', {params: {testDate: '2025-12-01'}})
+        // const { data } = await api.get('/workout-plan/session/deload-check', {params: {testDate: '2025-12-08', force: '1'}})
 
         console.log('DELOAD API: ', data); // <-- see what the backend returns
 
@@ -136,32 +136,6 @@ const UserProfile = () => {
             {allSessions.length === 0 ? (<p>No workout session yet.</p>) : (
               <ul>
                 {
-                  // allSessions.map(s => (
-                  //   <li key={s._id}>
-                  //     {/* <p>{new Date(s.date).toLocaleDateString()}</p> */}
-                  //     <p>{dayjs(s.date).format('ddd, MM/DD/YYYY')}</p>
-                  //     {
-                  //       Array.isArray(s.exercises) && s.exercises.length > 0 ? (
-                  //         <ol>
-                  //           {s.exercises.map((ex, i) => (
-                  //             <ExerciseCommentRow
-                  //               key={i}
-                  //               sessionDate={s.date}
-                  //               exercise={ex}
-                  //               onSaved={(updatedSession) => {
-                  //                 setAllSessions(prev =>
-                  //                   prev.map(x => (x._id === updatedSession._id ? updatedSession : x))
-                  //                 );
-                  //               }}
-                  //             />
-                  //           ))}
-                  //         </ol>
-                  //       ) : (<p>No exercises saved</p>)
-                  //     }
-                  //   </li>
-                  // ))
-
-
                   allSessions.map(s => {
                     const exercisesForSession = Array.isArray(s.exercises) ? s.exercises : [];
 

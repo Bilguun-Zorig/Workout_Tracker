@@ -73,10 +73,6 @@ export default function ExerciseCommentRow({ sessionDate, exercise, onSaved }) {
         </>
       )}
 
-      {/* {historyOpen && (
-        <ExerciseHistory sessionDate={sessionDate} label={exercise.label} onClose={() => setHistoryOpen(false)}/>
-      )} */}
-
       {
         exercise.videoUrl && (
           <>

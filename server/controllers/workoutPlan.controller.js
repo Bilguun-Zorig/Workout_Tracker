@@ -4,7 +4,7 @@ const WorkoutSession = require('../models/workoutPlan.model');
 const User = require('../models/user.model')
 
 
-function normalizeExerciseKEy(name = ''){
+function normalizeExerciseKey(name = ''){
   return name
   .toLowerCase()
   .trim()
@@ -68,7 +68,7 @@ module.exports = {
           rpe: rpeVal,
           isPr: isPrVal,
           category,
-          exerciseKey: normalizeExerciseKEy(rawName)
+          exerciseKey: normalizeExerciseKey(rawName)
         }
 
       }).filter(x => x.name)
@@ -228,12 +228,14 @@ module.exports = {
       //! Test - overwrite today
       // const raw = req.query.testDate;
       // const today = raw ? dayjs(raw) : dayjs();
+      // const force = req.query.force === '1';
 
       const today = dayjs()
       const weekStart = today.startOf('week') //Monday
       // //? Load the user to read/update lastDeloadShownAt
       const user = await User.findById(req.user._id).select('lastDeloadShownAt');
 
+      //! enable for test
       // if(!today.isValid()) {
       //   return res.status(400).json({message: 'Invalid testDate'})
       // }
@@ -261,6 +263,9 @@ module.exports = {
       }
 
       const weekNumber = streakWeeks + 1;
+      //! Test - to allow force
+      // const coreShouldDeload = force || (streakWeeks === 3); 
+
       const coreShouldDeload = (streakWeeks === 3)
 
       if(!coreShouldDeload) {
@@ -271,6 +276,36 @@ module.exports = {
           reason: 'Less than 4-week streak'
         })
       }
+
+      //! Test - Use it to tes popup
+
+    //! don't block when forcing
+    //       if (
+    //   !force && 
+    //   user.lastDeloadShownAt &&
+    //   dayjs(user.lastDeloadShownAt).isSame(today, 'week')
+    // ) {
+    //   return res.json({
+    //     shouldDeload: false,
+    //     weekNumber,
+    //     reason: 'Deload reminder already shown this week',
+    //   });
+    // }
+
+    // if (!force) {
+    //   user.lastDeloadShownAt = today.toDate();
+    //   await user.save();
+    // }
+
+    // return res.json({
+    //   shouldDeload: true,
+    //   weekNumber,
+    //   reason: force
+    //     ? 'FORCED for testing'
+    //     : '4-week streak and not yet shown for this week',
+    // });
+
+
       //? Prevent repeated reminders in the same week
       if(user.lastDeloadShownAt && dayjs(user.lastDeloadShownAt).isSame(today, 'week')) {
         return res.json({
@@ -302,7 +337,7 @@ module.exports = {
 
       if(!name && !key) return res.status(400).json({message: 'name or key is required'});
 
-      const exerciseKey = key || normalizeExerciseKEy(name)
+      const exerciseKey = key || normalizeExerciseKey(name)
 
       const fromDate = from ? dayjs(from).startOf('day').toDate() : new Date(0); // from the start
       const toDate = to ? dayjs(to).endOf('day').toDate() : new Date(); // until now
@@ -316,22 +351,17 @@ module.exports = {
 
       pipeline.push(
         {$match: {$or: orConds}}, 
-        {$project: {_id: 0, date: 1, name: '$exercises.name', result: '$exercises.result', rpe: '$exercises.comment', isPr: '$exercises.isPr', category: '$exercises.category'}},
+        {$project: {_id: 0, date: 1, 
+          name: '$exercises.name', 
+          result: '$exercises.result', 
+          rpe: '$exercises.rpe',
+          comment: '$exercises.comment',
+          isPr: '$exercises.isPr', 
+          category: '$exercises.category'}},
         {$sort: {date: 1}}
       )
 
       const rows = await WorkoutSession.aggregate(pipeline)
-
-
-      // const rows = await WorkoutSession.aggregate([
-      //   {
-      //     $match: {user: req.user._id, date: {$gte: fromDate, $lte: toDate}},
-      //   },
-      //   {$unwind: '$exercises'},
-      //   {$match: {'exercises.exercisesKey': exerciseKey}},
-      //   {$project: {_id: 0, date: 1, name: '$exercises.name', result: '$exercises.result', rpe: '$exercises.rpe', comment: '$exercises.comment', isPr: '$exercises.isPr', category: '$exercises.category'}},
-      //   {$sort: {date: 1}}
-      // ])
 
       const withLabels = rows.map(r => ({
         ...r, 
