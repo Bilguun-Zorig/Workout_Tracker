@@ -33,6 +33,23 @@ const UserSchema = new mongoose.Schema({
     lastDeloadShownAt: {
         type: Date,
         default: null
+    },
+    gender: {
+        type: String,
+        enum: {
+            values: ['male', 'female', 'other', 'prefer_not_to_say'],
+            message: 'Gender must be male, female, other or prefer_not_to_say'
+        },
+        default: 'prefer_not_to_say'
+    },
+    age: {
+        type: Number,
+    },
+    height: {
+        type: Number
+    },
+    weight: {
+        type: Number
     }
 }, {timestamps: true});
 

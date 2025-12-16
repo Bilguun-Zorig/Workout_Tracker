@@ -13,5 +13,6 @@ router.patch('/session/exercise-comment', ctrl.addComment)
 router.get('/sessions/history', ctrl.getExerciseHistoryByWeekDay)
 router.get('/session/deload-check', ctrl.checkDeload)
 router.get('/session/progress', ctrl.getExerciseProgress)
+router.get('/session/block-summary', ctrl.getBlockSummary)
 
 module.exports = router;

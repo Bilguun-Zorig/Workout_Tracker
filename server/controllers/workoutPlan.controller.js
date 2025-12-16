@@ -374,6 +374,128 @@ module.exports = {
       console.log('getExerciseProgress error', err)
       return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
     }
+  },
+
+  getBlockSummary: async (req, res) => {
+    try {
+      const today = dayjs()
+      const weekStart = today.startOf('week')
+
+      let  streakWeeks = 0;
+      for(let i = 1; i <= 3; i++) {
+        const from = weekStart.subtract(i, 'week').startOf('week').toDate()
+        const to = weekStart.subtract(i-1, 'week').startOf('week').toDate()
+
+        const count = await WorkoutSession.countDocuments({
+          user: req.user._id,
+          date: { $gte: from, $lt: to}
+        })
+
+      if (count > 0) {
+          streakWeeks += 1
+        } else {
+          break;
+        }
+      }
+
+      const weekNumber = streakWeeks + 1;
+      const blockWeeks = Math.min(4, weekNumber)
+
+      //Oldest week in the current block (max 4 weeks)
+      const earliestWeekStart = weekStart.subtract(blockWeeks - 1, 'week').startOf('week')
+      const fromDate = earliestWeekStart.toDate()
+      const toDate = weekStart.add(1, 'week').startOf('week').toDate()
+
+      const sessions = await WorkoutSession.find({
+        user: req.user._id,
+        date: {$gte: fromDate, $lt: toDate}
+      }).lean()
+
+      const weekMap = new Map()
+
+      for(const s of sessions) {
+        const ws = dayjs(s.date).startOf('week')
+        const key = ws.format('YYYY-MM-DD')
+
+        if(!weekMap.has(key)) {
+          weekMap.set(key, {
+            weekStart: ws.toDate(),
+            weekEnd: ws.add(1, 'week').toDate(),
+            totalSessions: 0,
+            totalExercises: 0,
+            prCount: 0,
+            rpeSum: 0,
+            rpeCount: 0,
+            categories: {strength: 0, hyrox: 0, cardio: 0, mobility: 0},
+            highlights: []
+          })
+        }
+
+        const wk = weekMap.get(key)
+        wk.totalSessions += 1;
+
+        const exList = Array.isArray(s.exercises) ? s.exercises : []
+        wk.totalExercises += exList.length;
+
+        for(const ex of exList) {
+          if(typeof ex.rpe === 'number') {
+            wk.rpeSum += ex.rpe;
+            wk.rpeCount += 1;
+          }
+
+          if(ex.isPr) {
+            wk.prCount += 1
+          }
+
+          if(ex.category && wk.categories[ex.category] !== undefined) {
+            wk.categories[ex.category] += 1
+          }
+
+          if(ex.comment || ex.isPr) {
+            wk.highlights.push({
+              date: s.date,
+              name: ex.name,
+              rpe: typeof ex.rpe === 'number' ? ex.rpe : null,
+              isPr: !!ex.isPr,
+              comment: ex.comment || '',
+              category: ex.category || null
+            })
+          }
+        }
+      }
+
+      //Sort weeks chronologically (oldest to newest)
+      const sortedKeys = Array.from(weekMap.keys()).sort()
+      const weeks = sortedKeys.map((key, idx) => {
+        const wk = weekMap.get(key)
+        const avgRpe = wk.rpeCount > 0 ? wk.rpeSum / wk.rpeCount: null
+
+        return {
+          weekIndex: idx + 1,
+          weekStart: wk.weekStart,
+          weekEnd: wk.weekEnd,
+          totalSessions: wk.totalSessions,
+          totalExercises: wk.totalExercises,
+          prCount: wk.prCount,
+          avgRpe,
+          categories: wk.categories,
+          highlights: wk.highlights.slice(0, 5) // cap highlights per week
+        }
+      })
+
+      return res.json({
+        weekNumber,
+        blockWeeks,
+        from: fromDate,
+        to: toDate,
+        weeks
+      })
+
+    } catch (err) {
+      console.log('getBLockSummary error', err)
+      return res.status(400).json({message: 'Bad Request', errors: err.errors || err});
+    }
+
   }
 
 
