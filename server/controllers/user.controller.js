@@ -99,38 +99,6 @@ module.exports = {
   },
 
   //? Update existing user
-  // updateUser: async (req, res) => {
-  //         try {
-  //                 const updates = {...req.body}
-  //                 // console.log("UPDATES FROM USER CONTROLLER <>", updates.email)
-  //                 // not allow to update email
-  //                 delete updates.email;
-
-  //                 if(updates.password){
-  //                         updates.password = await bcrypt.hash(updates.password, 10);
-  //                 }
-
-  //                 const user = await User.findOneAndUpdate(
-  //                         {_id: req.params.id},
-  //                         {$set: updates},
-  //                         {new: true, runValidators: true, context: 'query'})
-  //                         .select('-password');
-  //                 // console.log("USER FROM USER CONTROLLER <>", user)
-  //                 if(!user) {
-  //                         return res.status(404).json({message: 'User not found'});
-  //                 }
-  //                 return res.json({user})
-  //         } catch (err) {
-
-  //                 //duplicate email
-  //                 if(err.code === 11000){
-  //                         return res.status(400)
-  //                         .json({ errors: {email: {message: "Email already exists"}}});
-  //                 }
-  //                 return res.status(400).json({message: 'Validation failed', errors: err.errors || err});
-  //         }
-  // },
-
   updateUser: async (req, res) => {
     try {
       const updates = { ...req.body };
