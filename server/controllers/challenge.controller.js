@@ -65,4 +65,20 @@ module.exports = {
       return res.status(400).json({ message: 'Bad request', errors: err.errors || err });
     }
   },
+
+  getChallenge: async (req, res) => {
+    try{
+        const now = new Date()
+        const challenges = await Challenge.find({
+            user: req.user._id,
+            startDate: {$lte: now},
+            endDate: {$gt: now},
+        }).sort({createdAt: -1}).lean()
+
+        return res.json({challenges})
+
+    } catch (err) {
+      return res.status(400).json({ message: 'Bad request', errors: err.errors || err });
+    }
+  },
 };
