@@ -7,5 +7,8 @@ router.use(verifyJWT);
 
 router.post('/', ctrl.create)
 router.get('/active-challenges', ctrl.getChallenge)
+router.patch('/:id/log', ctrl.logProgress)
+router.patch('/:id/complete', ctrl.markComplete)
+router.patch('/:id/celebration-shown', ctrl.markCelebrationShown)
 
 module.exports = router;

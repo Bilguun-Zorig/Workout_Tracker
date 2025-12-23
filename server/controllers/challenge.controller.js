@@ -26,7 +26,7 @@ function getWindow(period, date = dayjs()) {
 }
 
 module.exports = {
-  //Create challenges
+  //? Create challenges
   create: async (req, res) => {
     try {
         const {type, period, target, unit, title, start} = req.body;
@@ -66,6 +66,7 @@ module.exports = {
     }
   },
 
+  //? Get all challenges
   getChallenge: async (req, res) => {
     try{
         const now = new Date()
@@ -81,4 +82,71 @@ module.exports = {
       return res.status(400).json({ message: 'Bad request', errors: err.errors || err });
     }
   },
+
+  //? Track challenge progress
+  logProgress: async (req, res) => {
+    try {
+        const {amount} = req.body
+        const add = toNumOrNull(amount)
+
+        if(add == null) return res.status(400).json({message: 'amount is required'})
+        if(add <= 0) return res.status(400).json({message: 'amount must be > 0'})
+
+        const c = await Challenge.findOne({_id: req.params.id, user: req.user._id})
+        if(!c) return res.status(400).json({message: 'Challenge not found'})
+
+        c.current = (c.current || 0) + add
+
+        if(!c.isCompleted && c.current >= c.target) {
+            c.isCompleted = true;
+            c.completedAt = new Date()
+        }
+
+        await c.save()
+        return res.json({challenge: c})
+
+    } catch (err) {
+      return res.status(400).json({ message: 'Bad request', errors: err.errors || err });
+    }
+  },
+
+  // Complete the challenge
+  markComplete: async (req, res) => {
+    try {
+        const c = await Challenge.findOne({_id: req.params.id, user: req.user._id})
+        if(!c) return res.status(400).json({message: 'Challenge not found'})
+
+        // By default: only allow complete the challenge if it met the target
+        if(c.current < c.target) return res.status(400).json({message: 'Target not reached yet.'})
+
+        if(!c.isCompleted){
+            c.isCompleted = true
+            c.completedAt = new Date()
+            await c.save()
+        }
+
+        return res.json({challenge: c})
+
+    } catch (err) {
+      return res.status(400).json({ message: 'Bad request', errors: err.errors || err });
+    }
+  },
+
+  //Celebration shown
+  markCelebrationShown: async(req, res) => {
+    try {
+        const c = await Challenge.findOneAndUpdate(
+            {_id: req.params.id, user: req.user._id},
+            {$set: {celebrationShownAt: new Date()}},
+            {new: target}
+        )
+        if(!c) return res.status(400).json({message: 'Challenge not found'})
+        
+        return res.json({challenge: c})
+        
+    } catch (err) {
+      return res.status(400).json({ message: 'Bad request', errors: err.errors || err });
+    }
+  }
+
 };
