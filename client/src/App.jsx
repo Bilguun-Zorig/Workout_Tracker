@@ -8,6 +8,7 @@ import UserSettings from './components/UserSettings'
 import CreateDailyWorkout from './components/CreateDailyWorkout'
 import ExerciseHistory from './components/ExerciseHistory'
 import ExerciseProgress from './components/ExerciseProgress'
+import ChallengeDashboard from './components/ChallengeDashboard'
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path='/workout-plan' element={<CreateDailyWorkout/>}/>
           <Route path='/sessions/history' element={<ExerciseHistory/>}/>
           <Route path='/exercise/progress' element={<ExerciseProgress/>}/>
+          <Route path='/challenges' element={<ChallengeDashboard/>}/>
         </Routes>
     </>
   )

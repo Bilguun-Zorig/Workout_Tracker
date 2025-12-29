@@ -98,6 +98,7 @@ const UserProfile = () => {
           <li><button onClick={handleLogoutClick} className="dropdown-item">Logout</button></li>
         </ul>
         <Link to={'/workout-plan'}>Create Your Workout Plan</Link>
+        <Link to={'/challenges'}>Create Challenge </Link>
       </div>
       {/* Deload pop-up */}
       {
