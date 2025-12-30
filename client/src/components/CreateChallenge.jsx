@@ -56,7 +56,7 @@ const CreateChallenge = ({ onCreated }) => {
                 <div>
                     <div>
                         <label htmlFor="type">Type</label>
-                        <select value={tpye} onChange={e => onTypeChange(e.target.value)}>
+                        <select value={type} onChange={e => onTypeChange(e.target.value)}>
                             <option value="run">Run</option>
                             <option value="steps">Steps</option>
                             <option value="swim">Swim</option>
